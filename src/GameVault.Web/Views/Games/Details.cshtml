@@ -48,6 +48,14 @@
             }
         </div>
 
+        @if (game.IsStudioGame)
+        {
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <a class="btn btn-sm btn-outline-primary" href="/games/@game.Slug/suggestions">Suggestion board</a>
+                <a class="btn btn-sm btn-outline-primary" href="/games/@game.Slug/feedback">Send feedback to the studio</a>
+            </div>
+        }
+
         <dl class="row mb-0">
             @if (game.Genres.Count > 0)
             {

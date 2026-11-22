@@ -20,12 +20,16 @@ public class GameVaultFactory : WebApplicationFactory<Program>
 
     protected virtual IReadOnlyDictionary<string, string?> ExtraSettings { get; } = new Dictionary<string, string?>();
 
+    /// <summary>Each factory writes uploads to its own temp folder, never to the real App_Data.</summary>
+    public string UploadsPath { get; } = Path.Combine(Path.GetTempPath(), "gv_uploads_" + Guid.NewGuid().ToString("N"));
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
         // UseSetting, not ConfigureAppConfiguration: Program.cs reads the connection string while building,
         // before late configuration sources are applied, so the latter silently hit the real dev database.
         builder.UseSetting("ConnectionStrings:GameVault", ConnectionString);
+        builder.UseSetting("Uploads:Path", UploadsPath);
         foreach (var (key, value) in ExtraSettings) builder.UseSetting(key, value);
     }
 
@@ -33,6 +37,7 @@ public class GameVaultFactory : WebApplicationFactory<Program>
     {
         base.Dispose(disposing);
         if (!disposing) return;
+        if (Directory.Exists(UploadsPath)) Directory.Delete(UploadsPath, recursive: true);
         using var cn = new SqlConnection($"Server={SqlServer};Database=master;Trusted_Connection=True;TrustServerCertificate=True");
         cn.Open();
         using var cmd = cn.CreateCommand();

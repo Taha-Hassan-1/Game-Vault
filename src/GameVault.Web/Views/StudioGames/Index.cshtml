@@ -1,0 +1,32 @@
+@model IReadOnlyList<GameVault.Application.Studio.StudioGameRow>
+@{
+    ViewData["Title"] = "Studio games";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Studio games</h1>
+    <a class="btn btn-primary btn-sm" href="/studio/games/new">Add a game</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-secondary">No studio games yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Game</th><th>Rating</th><th class="text-end">Screenshots</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var g in Model)
+            {
+                <tr>
+                    <td><a asp-route="game" asp-route-slug="@g.Slug">@g.Title</a></td>
+                    <td><partial name="_Stars" model="@((g.RatingAverage, g.RatingCount))" /></td>
+                    <td class="text-end">@g.ScreenshotCount / 8</td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/studio/games/@g.Id">Edit</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

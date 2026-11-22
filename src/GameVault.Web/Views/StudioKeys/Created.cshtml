@@ -1,0 +1,16 @@
+@model GameVault.Web.Models.NewKeyViewModel
+@{
+    ViewData["Title"] = "New API key";
+}
+<h1 class="h3 mb-3">New API key for @Model.GameTitle</h1>
+<div class="alert alert-warning">Copy this key now. It is not stored and cannot be shown again; if you lose it, revoke it and create a new one.</div>
+<div class="input-group mb-4">
+    <input class="form-control font-monospace" readonly value="@Model.Key.Plaintext" aria-label="API key" onfocus="this.select()" />
+</div>
+<p class="text-body-secondary">Send it with each request:</p>
+<pre class="p-3 border rounded-2"><code>POST /api/v1/feedback
+X-Api-Key: @Model.Key.Plaintext
+Content-Type: application/json
+
+{ "category": "Bug", "body": "The level 12 board will not load.", "appVersion": "1.4.0", "playerRef": "anon-7f3a" }</code></pre>
+<a class="btn btn-outline-primary" href="/studio/keys">Back to keys</a>

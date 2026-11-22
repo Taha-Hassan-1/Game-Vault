@@ -1,0 +1,26 @@
+@model GameVault.Web.Models.FeedbackForm
+@using GameVault.Domain
+@{
+    ViewData["Title"] = "Send feedback on " + Model.GameTitle;
+}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <h1 class="h3 mb-1">Send feedback</h1>
+        <p class="text-body-secondary mb-4"><a asp-route="game" asp-route-slug="@Model.Slug">@Model.GameTitle</a> · goes straight to the studio</p>
+        <form asp-controller="Feedback" asp-action="Send" asp-route-slug="@Model.Slug" method="post">
+            <div asp-validation-summary="All" class="alert alert-danger"></div>
+            <div class="mb-3">
+                <label asp-for="Category" class="form-label"></label>
+                <select asp-for="Category" class="form-select">
+                    @foreach (var c in Enum.GetValues<FeedbackCategory>()) { <option value="@c" selected="@(c.ToString() == Model.Category)">@c</option> }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Message" class="form-label"></label>
+                <textarea asp-for="Message" class="form-control" rows="6" maxlength="2000"></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">Send</button>
+            <a class="btn btn-outline-secondary" asp-route="game" asp-route-slug="@Model.Slug">Cancel</a>
+        </form>
+    </div>
+</div>

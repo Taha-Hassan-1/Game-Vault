@@ -70,6 +70,27 @@ internal static class Web
     public static async Task<HttpResponseMessage> SaveReviewAsync(HttpClient c, string slug, int stars, string body)
         => await PostAsync(c, $"/games/{slug}/reviews", new() { ["Stars"] = stars.ToString(), ["Body"] = body }, $"/games/{slug}/reviews");
 
+    /// <summary>Just enough of each format for the content check; the app never decodes images.</summary>
+    public static byte[] Png(int extra = 64) => new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }.Concat(new byte[extra]).ToArray();
+
+    public static async Task<HttpResponseMessage> UploadAsync(HttpClient c, string url, byte[] bytes, string fileName, string tokenPage)
+    {
+        var content = new MultipartFormDataContent
+        {
+            { new StringContent(await TokenAsync(c, tokenPage)), "__RequestVerificationToken" }
+        };
+        var file = new ByteArrayContent(bytes);
+        file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        content.Add(file, "file", fileName);
+        return await c.PostAsync(url, content);
+    }
+
+    public static async Task<int> GameIdAsync(GameVaultFactory f, string slug)
+    {
+        using var scope = f.Services.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<GameVaultDbContext>().Games.Single(g => g.Slug == slug).Id;
+    }
+
     public static async Task<(int Count, double Average)> RatingAsync(GameVaultFactory f, string slug)
     {
         using var scope = f.Services.CreateScope();

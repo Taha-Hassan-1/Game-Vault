@@ -1,0 +1,97 @@
+@model GameVault.Web.Models.SuggestionBoardViewModel
+@using GameVault.Domain
+@{
+    ViewData["Title"] = Model.Game.Title + " suggestions";
+    var slug = Model.Game.Slug;
+    string Badge(SuggestionStatus s) => s switch
+    {
+        SuggestionStatus.Planned => "text-bg-info",
+        SuggestionStatus.InProgress => "text-bg-warning",
+        SuggestionStatus.Shipped => "text-bg-success",
+        SuggestionStatus.Declined => "text-bg-secondary",
+        _ => "text-bg-dark border"
+    };
+}
+<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="/games">Games</a></li><li class="breadcrumb-item"><a asp-route="game" asp-route-slug="@slug">@Model.Game.Title</a></li><li class="breadcrumb-item active">Suggestions</li></ol></nav>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h1 class="h3 mb-0">Suggestion board</h1>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Filter by status">
+                <a class="btn @(Model.Filter is null ? "btn-primary" : "btn-outline-secondary")" href="/games/@slug/suggestions">All</a>
+                @foreach (var s in Enum.GetValues<SuggestionStatus>())
+                {
+                    <a class="btn @(Model.Filter == s ? "btn-primary" : "btn-outline-secondary")" href="/games/@slug/suggestions?status=@s">@s</a>
+                }
+            </div>
+        </div>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="alert alert-secondary">No suggestions here yet. Be the first.</div>
+        }
+
+        @foreach (var s in Model.Items)
+        {
+            <article class="card mb-3">
+                <div class="card-body d-flex gap-3">
+                    <div class="text-center" style="min-width:3.5rem">
+                        @if (Model.IsSignedIn)
+                        {
+                            <form asp-controller="Suggestions" asp-action="Vote" asp-route-id="@s.Id" method="post">
+                                <input type="hidden" name="slug" value="@slug" />
+                                <input type="hidden" name="present" value="@((!s.VotedByMe).ToString().ToLowerInvariant())" />
+                                <button class="btn btn-sm @(s.VotedByMe ? "btn-primary" : "btn-outline-secondary") w-100" type="submit"
+                                        aria-label="@(s.VotedByMe ? "Remove your vote" : "Upvote")">▲</button>
+                            </form>
+                        }
+                        <div class="fw-semibold mt-1">@s.VoteCount</div>
+                        <div class="small text-body-secondary">vote@(s.VoteCount == 1 ? "" : "s")</div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex flex-wrap justify-content-between gap-2">
+                            <h2 class="h6 mb-1">@s.Title</h2>
+                            <span class="badge @Badge(s.Status)">@(s.Status == SuggestionStatus.InProgress ? "In progress" : s.Status.ToString())</span>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(s.Body)) { <p class="mb-2" style="white-space:pre-wrap">@s.Body</p> }
+                        <div class="small text-body-secondary">by @s.AuthorName · @s.CreatedAt.ToString("d MMM yyyy")</div>
+                        @if (Model.IsOwner)
+                        {
+                            <form asp-controller="Suggestions" asp-action="SetStatus" asp-route-id="@s.Id" method="post" class="d-flex gap-2 mt-2">
+                                <input type="hidden" name="slug" value="@slug" />
+                                <select name="status" class="form-select form-select-sm w-auto" aria-label="Set status">
+                                    @foreach (var st in Enum.GetValues<SuggestionStatus>()) { <option value="@st" selected="@(st == s.Status)">@st</option> }
+                                </select>
+                                <button class="btn btn-sm btn-outline-secondary" type="submit">Set status</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <h2 class="h5">Suggest something</h2>
+        @if (Model.IsSignedIn)
+        {
+            <form asp-controller="Suggestions" asp-action="Submit" asp-route-slug="@slug" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger"></div>
+                <div class="mb-3">
+                    <label asp-for="Form.Title" class="form-label">Title</label>
+                    <input asp-for="Form.Title" class="form-control" maxlength="200" />
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Form.Body" class="form-label">Details (optional)</label>
+                    <textarea asp-for="Form.Body" class="form-control" rows="5" maxlength="4000"></textarea>
+                </div>
+                <button class="btn btn-primary" type="submit">Post suggestion</button>
+            </form>
+        }
+        else
+        {
+            <p class="text-body-secondary"><a href="/account/login?returnUrl=@Uri.EscapeDataString("/games/" + slug + "/suggestions")">Sign in</a> to suggest an idea or vote.</p>
+        }
+    </div>
+</div>

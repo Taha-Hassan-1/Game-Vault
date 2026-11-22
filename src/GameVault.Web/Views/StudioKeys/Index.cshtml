@@ -1,0 +1,55 @@
+@model GameVault.Web.Models.KeysViewModel
+@{
+    ViewData["Title"] = "API keys";
+}
+<h1 class="h3 mb-2">API keys</h1>
+<p class="text-body-secondary mb-4">A build sends feedback with <code>POST /api/v1/feedback</code> and its key in the <code>X-Api-Key</code> header. A key belongs to one game. The full key is shown once, when it is created.</p>
+
+@if (Model.Games.Count == 0)
+{
+    <div class="alert alert-secondary">Create a studio game first.</div>
+}
+else
+{
+    <form asp-controller="StudioKeys" asp-action="Create" method="post" class="row g-2 align-items-end mb-4">
+        <div class="col-md-5">
+            <label class="form-label small" for="gameId">Game</label>
+            <select id="gameId" name="gameId" class="form-select">
+                @foreach (var g in Model.Games) { <option value="@g.Id">@g.Title</option> }
+            </select>
+        </div>
+        <div class="col-auto"><button class="btn btn-primary" type="submit">Create key</button></div>
+    </form>
+}
+
+@if (Model.Keys.Count == 0)
+{
+    <p class="text-body-secondary">No keys yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Game</th><th>Key</th><th>Created</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var k in Model.Keys)
+            {
+                <tr class="@(k.IsActive ? "" : "text-body-secondary")">
+                    <td>@k.GameTitle</td>
+                    <td><code>@k.Prefix…</code></td>
+                    <td>@k.CreatedAt.ToString("d MMM yyyy")</td>
+                    <td>@if (k.IsActive) { <span class="badge text-bg-success">Active</span> } else { <span class="badge text-bg-secondary">Revoked @k.RevokedAt?.ToString("d MMM yyyy")</span> }</td>
+                    <td class="text-end">
+                        @if (k.IsActive)
+                        {
+                            <form asp-controller="StudioKeys" asp-action="Revoke" asp-route-id="@k.Id" method="post">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Revoke</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

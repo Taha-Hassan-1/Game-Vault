@@ -1,0 +1,84 @@
+@model GameVault.Application.Studio.StudioDashboard
+@{
+    ViewData["Title"] = "Studio";
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h1 class="h3 mb-0">Studio</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-primary" href="/studio/games">Games</a>
+        <a class="btn btn-sm btn-outline-primary" href="/studio/inbox">Inbox</a>
+        <a class="btn btn-sm btn-outline-primary" href="/studio/keys">API keys</a>
+    </div>
+</div>
+
+<section class="mb-5">
+    <h2 class="h5 mb-3">Your games</h2>
+    @if (Model.Games.Count == 0)
+    {
+        <div class="alert alert-secondary">No studio games yet. <a href="/studio/games/new">Add the first one.</a></div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Game</th><th>Rating</th><th class="text-end">New feedback</th><th class="text-end">Open suggestions</th></tr></thead>
+                <tbody>
+                @foreach (var g in Model.Games)
+                {
+                    <tr>
+                        <td><a asp-route="game" asp-route-slug="@g.Slug">@g.Title</a></td>
+                        <td><partial name="_Stars" model="@((g.RatingAverage, g.RatingCount))" /></td>
+                        <td class="text-end"><a href="/studio/inbox?gameId=@g.Id&status=New">@g.NewFeedback</a></td>
+                        <td class="text-end"><a href="/games/@g.Slug/suggestions">@g.OpenSuggestions</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<section class="mb-5">
+    <h2 class="h5 mb-3">Newest feedback</h2>
+    @if (Model.Newest.Count == 0)
+    {
+        <p class="text-body-secondary">Nothing yet.</p>
+    }
+    else
+    {
+        @foreach (var f in Model.Newest)
+        {
+            <div class="border-bottom py-2">
+                <div class="d-flex justify-content-between gap-2">
+                    <span><strong>@f.GameTitle</strong> <span class="badge text-bg-secondary">@f.Category</span> <span class="badge text-bg-dark border">@f.Source</span></span>
+                    <span class="small text-body-secondary">@f.CreatedAt.ToString("d MMM HH:mm")</span>
+                </div>
+                <div class="text-truncate">@f.Body</div>
+            </div>
+        }
+        <a class="d-inline-block mt-2" href="/studio/inbox">Open the inbox</a>
+    }
+</section>
+
+<section>
+    <h2 class="h5 mb-1">Feedback by version</h2>
+    <p class="small text-body-secondary">Counts of what players send per build, so you can see whether a release brought fewer bugs and more praise. Only feedback that carries an app version is counted.</p>
+    @if (Model.ByVersion.Count == 0)
+    {
+        <p class="text-body-secondary">No versioned feedback yet.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead><tr><th>Game</th><th>Version</th><th class="text-end">Bugs</th><th class="text-end">Ideas</th><th class="text-end">Praise</th></tr></thead>
+                <tbody>
+                @foreach (var v in Model.ByVersion)
+                {
+                    <tr><td>@v.GameTitle</td><td><code>@v.AppVersion</code></td><td class="text-end">@v.Bugs</td><td class="text-end">@v.Ideas</td><td class="text-end">@v.Praise</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

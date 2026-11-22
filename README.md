@@ -11,7 +11,7 @@ An ASP.NET Core MVC site (.NET 10) where visitors browse a game catalogue, rate 
 | M2 Catalogue | Done: home, search, genre/platform/tag filters, sort, paging (cap 24), details, similar games, caching decorator |
 | M3 RAWG integration | Done: provider interface + factory, typed client with retry/timeout/circuit breaker, mapper, request budget, lazy details, nightly sync. Off until you set a key (see below); not yet run against the live RAWG API |
 | M4 Accounts and reviews | Done: Identity with Member/Moderator/Admin roles, register/sign in/profile, 1 to 5 star reviews (one per member per game), `ReviewChanged` handler keeps ratings current, wishlist and played lists, report and moderation queue |
-| M5 Studio feedback hub | Not started (schema is in place) |
+| M5 Studio feedback hub | Done: studio dashboard, studio game create/edit with cover and screenshot uploads, suggestion board with votes and statuses, feedback API with per-key rate limiting, API-key management, feedback inbox with filters and CSV export. A feedback message from a real Unity build of Untangle has not been sent yet (see below) |
 | M6 Harden and ship | Not started |
 
 ## Layout
@@ -58,6 +58,47 @@ Behaviour worth knowing:
 - Anonymous visitors to a protected page are redirected to sign-in, and members without the role to an access-denied page. This is how cookie authentication answers 401 and 403 in a browser.
 - Every POST needs an anti-forgery token. Review text is plain text and always HTML-encoded.
 - Sign-in locks an account for 10 minutes after 5 failed attempts. Email confirmation is off until a mail sender exists.
+
+## Studio feedback hub
+
+Everything under `/studio` belongs to the Admin (policy `StudioOwner`). Moderators cannot open it.
+
+| Page | What it does |
+|---|---|
+| `/studio` | Per-game rating and counts of new feedback and open suggestions, newest feedback, and feedback per app version (bugs, ideas, praise per build) |
+| `/studio/games` | Create and edit studio games, upload a cover and up to 8 screenshots. The address (slug) is generated once and never changes |
+| `/studio/inbox` | Web and API feedback together; filter by game, category, status and source; mark as New, Read or Archived; export the filtered list as CSV |
+| `/studio/keys` | Create and revoke API keys per game. A key is shown once, on creation |
+| `/games/{slug}/suggestions` | Public board for each studio game. Members post and upvote (one vote each, withdrawable); the Admin sets New, Planned, In progress, Shipped or Declined |
+| `/games/{slug}/feedback` | Members send a bug, idea or praise straight to the inbox |
+
+### Sending feedback from a Unity build
+
+Create a key in `/studio/keys`, then post JSON with it in the `X-Api-Key` header:
+
+```
+POST /api/v1/feedback
+X-Api-Key: gv_...
+Content-Type: application/json
+
+{ "category": "Bug", "body": "The level 12 board will not load.", "appVersion": "1.4.0", "playerRef": "anon-7f3a" }
+```
+
+| Field | Rules |
+|---|---|
+| `category` | `Bug`, `Idea` or `Praise` (required) |
+| `body` | 1 to 2000 characters (required) |
+| `appVersion` | optional, up to 32 characters of letters, digits and `. _ + -` |
+| `playerRef` | optional opaque string up to 100 characters; do not send personal data |
+
+Answers: `201 {"id": 123}` on success. Errors are `application/problem+json`: `400` with a field-by-field `errors` object, `401` for a missing, unknown or revoked key, `413` over 16 KB, `415` if it is not JSON, `429` with `Retry-After` when over the limit. The key decides the game, so a build cannot post to another game.
+
+Limits (configurable): 30 requests a minute per key (`FeedbackApi:PermitPerMinute`) and 120 a minute per address across `/api` (`FeedbackApi:IpPermitPerMinute`), so made-up keys do not buy extra requests. Behind a proxy or load balancer, forwarded headers must be configured at deploy time or every client will share one address.
+
+Security notes:
+- Only a SHA-256 hash and a 10-character prefix of each key are stored. A lost key cannot be recovered, only replaced.
+- Uploaded images are accepted by their content (PNG, JPEG, WebP, up to 2 MB), never by file name or declared type. SVG is refused because it can carry script. Files are renamed to random names, stored outside `wwwroot` (`Uploads:Path`, default `App_Data/uploads`, git-ignored) and served with `nosniff`.
+- CSV export neutralises cells that begin with `=`, `+`, `-` or `@`, since feedback text comes from strangers and a spreadsheet would otherwise run it as a formula.
 
 ## RAWG
 

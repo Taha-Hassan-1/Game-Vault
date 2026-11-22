@@ -1,6 +1,10 @@
 using GameVault.Application.Catalogue;
 using GameVault.Application.Events;
+using GameVault.Application.Feedback;
 using GameVault.Application.Lists;
+using GameVault.Application.Studio;
+using GameVault.Application.Suggestions;
+using GameVault.Infrastructure.Storage;
 using GameVault.Application.Metadata;
 using GameVault.Application.Reviews;
 using GameVault.Infrastructure.Rawg;
@@ -37,6 +41,17 @@ public static class DependencyInjection
         services.AddScoped<ModerationService>();
         services.AddScoped<ListService>();
         services.AddScoped<IDomainEventHandler<ReviewChanged>, RatingRecalculator>();
+
+        services.AddOptions<UploadsOptions>().Bind(config.GetSection(UploadsOptions.Section));
+        services.AddSingleton<IImageStore, FileImageStore>();
+        services.AddScoped<IStudioGameRepository, EfStudioGameRepository>();
+        services.AddScoped<IFeedbackRepository, EfFeedbackRepository>();
+        services.AddScoped<IApiKeyRepository, EfApiKeyRepository>();
+        services.AddScoped<ISuggestionRepository, EfSuggestionRepository>();
+        services.AddScoped<StudioGameService>();
+        services.AddScoped<FeedbackService>();
+        services.AddScoped<ApiKeyService>();
+        services.AddScoped<SuggestionService>();
 
         services.AddHybridCache();
         services.AddScoped<GameCatalog>();

@@ -1,11 +1,18 @@
+using System.Threading.RateLimiting;
+using GameVault.Application.Studio;
 using GameVault.Domain;
 using GameVault.Infrastructure;
 using GameVault.Infrastructure.Identity;
 using GameVault.Infrastructure.Persistence;
+using GameVault.Infrastructure.Storage;
+using GameVault.Web.Controllers.Api;
 using GameVault.Web.Security;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +54,37 @@ builder.Services.ConfigureApplicationCookie(o =>
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(Policies.CanModerate, p => p.RequireRole(Roles.Moderator, Roles.Admin))
     .AddPolicy(Policies.StudioOwner, p => p.RequireRole(Roles.Admin));
+
+// The Unity feedback endpoint authenticates with an API key instead of the cookie.
+builder.Services.AddAuthentication()
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyDefaults.Scheme, null);
+
+// Limits are per API key, plus a looser per-address cap on /api so rotating made-up keys does not buy extra requests.
+var keyPermit = builder.Configuration.GetValue("FeedbackApi:PermitPerMinute", 30);
+var ipPermit = builder.Configuration.GetValue("FeedbackApi:IpPermitPerMinute", 120);
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    o.OnRejected = async (ctx, ct) =>
+    {
+        if (ctx.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+            ctx.HttpContext.Response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
+        await ApiProblems.WriteAsync(ctx.HttpContext, StatusCodes.Status429TooManyRequests, "Too many requests.", "Slow down and retry shortly.");
+    };
+    o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
+        ctx.Request.Path.StartsWithSegments("/api")
+            ? RateLimitPartition.GetFixedWindowLimiter("ip:" + ctx.Connection.RemoteIpAddress,
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = ipPermit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 })
+            : RateLimitPartition.GetNoLimiter("site"));
+    o.AddPolicy(RateLimitPolicies.Feedback, ctx =>
+    {
+        var key = ctx.Request.Headers[ApiKeyDefaults.Header].ToString();
+        var partition = key.Length > 0 ? "key:" + KeyHasher.Hash(key) : "anon:" + ctx.Connection.RemoteIpAddress;
+        return RateLimitPartition.GetFixedWindowLimiter(partition,
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = keyPermit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 });
+    });
+});
+
 builder.Services.AddResponseCompression();
 builder.Services.AddHealthChecks().AddDbContextCheck<GameVaultDbContext>("database");
 
@@ -69,9 +107,37 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
+
+// Kestrel rejects an oversized or broken body by throwing; on the API that becomes a plain problem response
+// with Kestrel's own status (for example 413) instead of an error page and a logged 500.
+app.Use(async (ctx, next) =>
+{
+    try { await next(); }
+    catch (BadHttpRequestException ex) when (ctx.Request.Path.StartsWithSegments("/api") && !ctx.Response.HasStarted)
+    {
+        await ApiProblems.WriteAsync(ctx, ex.StatusCode,
+            ex.StatusCode == StatusCodes.Status413PayloadTooLarge ? "The request is too large." : "The request could not be read.", null);
+    }
+});
+
 app.UseResponseCompression();
 app.UseHttpsRedirection();
+
+// Uploaded studio images live outside wwwroot, so they are served from their own folder.
+var uploads = (FileImageStore)app.Services.GetRequiredService<IImageStore>();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploads.Root),
+    RequestPath = FileImageStore.RequestPath,
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.XContentTypeOptions = "nosniff";
+        ctx.Context.Response.Headers.CacheControl = "public,max-age=604800,immutable"; // names are random and never reused
+    }
+});
+
 app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapStaticAssets();
