@@ -36,7 +36,11 @@
     <div class="col-6 col-md-2">
         <label class="form-label small" for="sort">Sort</label>
         <select id="sort" name="sort" class="form-select">
-            @foreach (var s in Enum.GetValues<GameSort>()) { <option value="@s" selected="@(s == q.Sort)">@s</option> }
+            @foreach (var s in Enum.GetValues<GameSort>())
+            {
+                var label = s switch { GameSort.TopRated => "Top rated", GameSort.Title => "Title A to Z", GameSort.Released => "Release date", _ => "Newest" };
+                <option value="@s" selected="@(s == q.Sort)">@label</option>
+            }
         </select>
     </div>
     <div class="col-12 d-flex gap-2">
@@ -49,7 +53,7 @@
 
 @if (Model.Result.Items.Count == 0)
 {
-    <div class="alert alert-secondary">No games match those filters.</div>
+    <div class="alert alert-secondary">No games match those filters. <a href="/games" class="alert-link">Clear the filters</a> to see every game.</div>
 }
 else
 {
@@ -65,13 +69,24 @@ else
 {
     <nav class="mt-4" aria-label="Pages">
         <ul class="pagination justify-content-center">
-            <li class="page-item @(Model.Result.HasPrevious ? "" : "disabled")">
-                <a class="page-link" asp-action="Index" asp-all-route-data="Model.PageRoute(Model.Result.Page - 1)">Previous</a>
-            </li>
-            <li class="page-item disabled"><span class="page-link">Page @Model.Result.Page of @Model.Result.TotalPages</span></li>
-            <li class="page-item @(Model.Result.HasNext ? "" : "disabled")">
-                <a class="page-link" asp-action="Index" asp-all-route-data="Model.PageRoute(Model.Result.Page + 1)">Next</a>
-            </li>
+            @* An unavailable direction is plain text, not a link: a disabled-looking link is still reachable with Tab. *@
+            @if (Model.Result.HasPrevious)
+            {
+                <li class="page-item"><a class="page-link" asp-action="Index" asp-all-route-data="Model.PageRoute(Model.Result.Page - 1)" rel="prev">Previous</a></li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            }
+            <li class="page-item disabled"><span class="page-link" aria-current="page">Page @Model.Result.Page of @Model.Result.TotalPages</span></li>
+            @if (Model.Result.HasNext)
+            {
+                <li class="page-item"><a class="page-link" asp-action="Index" asp-all-route-data="Model.PageRoute(Model.Result.Page + 1)" rel="next">Next</a></li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            }
         </ul>
     </nav>
 }

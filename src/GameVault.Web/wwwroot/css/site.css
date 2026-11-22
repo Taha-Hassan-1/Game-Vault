@@ -5,8 +5,38 @@ html { font-size: 15px; }
 .gv-nav { background: var(--bs-body-bg); }
 .gv-hero { background: linear-gradient(135deg, #1d2440, #2b1d40); }
 
-.gv-card { transition: transform .12s ease, border-color .12s ease; }
-.gv-card:hover { transform: translateY(-2px); border-color: var(--gv-accent); }
+/* Bootstrap's dark-theme outline buttons draw their text in the solid brand colors, which measure 3.3 to 3.4:1 on the page
+   background (4.5:1 is required for text). Bootstrap ships lighter text-emphasis colors for exactly this; the borders stay. */
+[data-bs-theme="dark"] .btn-outline-primary   { --bs-btn-color: var(--bs-primary-text-emphasis); }
+[data-bs-theme="dark"] .btn-outline-secondary { --bs-btn-color: var(--bs-secondary-text-emphasis); }
+[data-bs-theme="dark"] .btn-outline-danger    { --bs-btn-color: var(--bs-danger-text-emphasis); }
+
+/* Cards answer focus and hover with the same border; the lift is hover-only (a tap would leave it stuck on touch)
+   and off for people who asked for less motion. */
+.gv-card { transition: border-color .12s ease; }
+.gv-card:focus-visible { border-color: var(--gv-accent); }
+@media (hover: hover) {
+  .gv-card:hover { border-color: var(--gv-accent); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .gv-card { transition: transform .12s ease, border-color .12s ease; }
+  .gv-card:hover { transform: translateY(-2px); }
+}
+
+/* iOS Safari zooms the page when a field's text is under 16px, and the root size is 15px below 768px. */
+@media (max-width: 767.98px) {
+  .form-control, .form-select { font-size: 16px; }
+}
+
+/* The skip link moves focus here; a ring around the whole page would be noise. */
+main:focus { outline: none; }
+
+/* A readable line length for prose (60 to 75 characters). */
+.gv-prose { max-width: 70ch; }
+.gv-prose h3 { margin-top: 1.25rem; }
+
+/* A thin neutral edge so light cover art does not melt into the page. Pure white at 10% in dark mode, no tint. */
+.gv-outline { outline: 1px solid oklch(1 0 0 / 0.1); outline-offset: -1px; }
 
 .gv-cover { aspect-ratio: 16 / 10; object-fit: cover; width: 100%; }
 .gv-cover-lg { aspect-ratio: 3 / 4; }

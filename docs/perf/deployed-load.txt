@@ -1,0 +1,9 @@
+﻿first (cold) request per page, ms:
+    823.4  200     8658 B  /
+    228.3  200    12974 B  /games
+    245.0  200    12879 B  /games?page=2
+    224.5  200     8692 B  /games/untangle
+/, /games, /games?page=2, /games/untangle
+requests 1000  concurrency 8  encoding br  wall 28.9s  rps 35
+latency ms  p50 224.9  p90 232.3  p95 252.5  p99 307.1  max 691.3
+avg body 10.5 KB   statuses 200x1000

@@ -153,3 +153,21 @@ dotnet run --project benchmarks/GameVault.Benchmarks -c Release -- load http://1
 ```
 
 Set `GAMEVAULT_PERF_CONNECTION` to point the tool at another server. The raw outputs behind this page: `perf/queries-before.txt` (M5 code, no sort indexes), `perf/queries-after.txt`, `perf/similarity-bdn.txt`, `perf/load-cache-on.txt`, `perf/load-cache-off.txt`, `perf/load-weight.txt`, `perf/static-headers.txt`.
+
+## Deployed instance
+
+The site runs on Azure Container Apps (0.5 vCPU, one replica, scale to zero) with a free-offer Azure SQL database, in the central US region. The load runner from this repository was pointed at it from the development machine (raw output: `perf/deployed-load.txt`):
+
+```
+requests 1000  concurrency 8  encoding br  wall 28.9s  rps 35
+latency ms  p50 224.9  p90 232.3  p95 252.5  p99 307.1  max 691.3
+```
+
+Pages: home, catalogue, catalogue page 2 and a game page; every response was 200, about 10.5 KB with brotli.
+
+How to read it honestly:
+- The spec's target is a p95 under 300 ms for cached catalogue pages, and 252 ms meets it from this location.
+- The median of 225 ms is almost entirely the network round trip between the development machine and the Azure region. The server's own time cannot be separated out from these numbers, so they do not show the cache's effect the way the local test does.
+- The requests per second (35) is limited by that round trip times the concurrency of 8, not by the server's capacity.
+- It is one run from one place, with the app already awake. The first request after idle took about 0.8 s here and longer when the database also had to wake.
+- To measure server time properly, run the load from inside the same Azure region (for example a short-lived container job) (a short-lived container job in the same environment), or run k6 from a machine near it.

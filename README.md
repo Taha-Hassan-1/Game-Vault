@@ -4,7 +4,7 @@
 
 A public **ASP.NET Core MVC** site where visitors browse a game catalogue, rate and review games and keep wishlists, and where the studio's own games (Untangle first) get a built-in feedback loop: a suggestion board with votes, and an API the Unity builds post player feedback to. It doubles as a portfolio piece for MVC, API integration, security and performance work.
 
-**Live demo:** not deployed yet. The host is chosen on the day; the checklist is in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+**Live demo:** https://gamevault-taha.thankfulgrass-8dcd7388.centralus.azurecontainerapps.io (Azure Container Apps and Azure SQL, scale-to-zero, so the first visit after idle takes a while to wake). How it was deployed: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 | | |
 |---|---|
@@ -71,7 +71,7 @@ Eighteen short records in [docs/adr/](docs/adr/README.md): the thirteen from the
 | M3 RAWG integration | Done, tested with a fake HTTP handler, and run against the live RAWG API (first import: 103 games from 3 requests; smaller cover images confirmed). **Bulk import waits on RAWG's answer about caching** |
 | M4 Accounts and reviews | Done |
 | M5 Studio feedback hub | Done; **a real Unity build has not sent a message yet** |
-| M6 Harden and ship | Hardening, performance pass, docs and smoke tests done; **not deployed** |
+| M6 Harden and ship | Done and **deployed** (Azure Container Apps); hardening, performance pass, docs and smoke tests; deployed p95 measured from one location, see below |
 
 ## To do later
 
@@ -81,8 +81,9 @@ Eighteen short records in [docs/adr/](docs/adr/README.md): the thirteen from the
 
 Stated plainly so nothing here is a surprise:
 
-- **No live URL.** Nothing has been deployed, so the spec's "p95 under 300 ms on the deployed instance" is unmeasured. The k6 script is ready ([perf/catalogue.k6.js](perf/catalogue.k6.js)); locally the same pages answer in 19 ms at p95.
-- **CI has not run on GitHub yet**, and the Docker image has not been built (Docker is not installed on the development machine).
+- **The deployed p95 is measured, but not very informatively.** From the development machine to the Azure region, 1,000 requests at 8 concurrent took a p95 of 252 ms (under the spec's 300 ms), but the median was 225 ms, which is mostly the round trip over the network, so it says little about the server itself. It was run with the repository's own load runner; k6 ([perf/catalogue.k6.js](perf/catalogue.k6.js)) is still not installed here. [Details](docs/PERFORMANCE.md#deployed-instance).
+- **The deployed demo shows only the 31 sample games** (RAWG is off there) and loses studio uploads when the app restarts.
+- **CI built and pushed the Docker image** (the deployment pulled it), but the Dockerfile has still never been built on the development machine, which has no Docker.
 - **Search uses `LIKE`, not full-text search.** The Full-Text feature is not installed on the development SQL Server Express; [docs/sql/fulltext.sql](docs/sql/fulltext.sql) is the untested setup for a server that has it ([ADR 16](docs/adr/0016-search-like-not-fulltext.md)).
 - **RAWG's terms do not mention caching, and RAWG has not been asked.** The live API works (a first import of 103 games; the smaller cover URLs return 200 at about a fifth of the size). Because this is a portfolio project, the nightly import is switched off (`SyncBudget:SyncEnabled=false`), so no new games are added; the 103 stored games stay, and a game page still fetches its own details once when first opened. Anyone running this as a real service should get RAWG's answer first.
 - **The 1,000-game success criterion is not met yet:** the catalogue holds 103 games locally (31 seeded plus the first RAWG pages); performance was measured on 5,000 synthetic ones.

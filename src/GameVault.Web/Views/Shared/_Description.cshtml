@@ -1,0 +1,20 @@
+@* RAWG descriptions are plain text with "###Heading" lines; render them as headings and paragraphs instead of one run of text.
+   Razor encodes every string, so nothing here can inject markup. *@
+@model string
+@{
+    var lines = (Model ?? "").Replace("\r\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+<div class="gv-prose">
+    @foreach (var line in lines)
+    {
+        if (line.StartsWith("###"))
+        {
+            var heading = line.TrimStart('#').Trim();
+            if (heading.Length > 0) { <h3 class="h6 text-body-emphasis">@heading</h3> }
+        }
+        else
+        {
+            <p>@line</p>
+        }
+    }
+</div>

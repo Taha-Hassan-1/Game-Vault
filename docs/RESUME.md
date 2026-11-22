@@ -26,4 +26,6 @@ Use these as drafts. The numbers are real; keep the qualifier about how they wer
 - Wrote a test suite of about 350 tests (unit, integration against a real SQL Server, authorization, browser smoke) with **100% line and 92% branch coverage** of the Application layer, and a CI pipeline that fails below 70%.
 - Benchmarked a planned optimisation with BenchmarkDotNet, found it **gave no improvement**, and reverted it, keeping the measurements as evidence.
 
-Not claimed, because it has not happened yet: a live URL, a deployed load test, and a real Unity build posting feedback.
+Deployed: the site is live on Azure Container Apps (URL in the README). A load test against it from the development machine gave a p95 of 252 ms, but most of that is network distance; quote it only with that qualifier.
+
+Not claimed, because it has not happened yet: a real Unity build posting feedback, and a load test that isolates server time on the deployed instance.

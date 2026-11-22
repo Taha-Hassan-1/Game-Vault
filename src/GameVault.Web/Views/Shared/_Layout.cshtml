@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <a class="visually-hidden-focusable btn btn-primary position-absolute m-2 z-3" href="#main">Skip to content</a>
     <header>
         <nav class="navbar navbar-expand-md border-bottom gv-nav">
             <div class="container">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">🎮 GameVault</a>
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index"><span aria-hidden="true">🎮</span> GameVault</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -53,7 +54,7 @@
             </div>
         </nav>
     </header>
-    <main role="main" class="container py-4 flex-grow-1">
+    <main id="main" tabindex="-1" class="container py-4 flex-grow-1">
         <partial name="_Flash" />
         @RenderBody()
     </main>

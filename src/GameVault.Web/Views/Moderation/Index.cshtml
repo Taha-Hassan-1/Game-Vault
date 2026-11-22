@@ -19,7 +19,7 @@
                     <span class="text-body-secondary"> · by @r.AuthorName · @r.CreatedAt.ToString("d MMM yyyy")</span>
                 </div>
                 <div>
-                    <span class="gv-stars">@(new string('★', r.Stars))</span>
+                    <partial name="_ReviewStars" model="r.Stars" />
                     @if (r.IsHidden) { <span class="badge text-bg-warning">Hidden</span> }
                     @if (r.Reports.Count > 0) { <span class="badge text-bg-danger">@r.Reports.Count report@(r.Reports.Count == 1 ? "" : "s")</span> }
                 </div>

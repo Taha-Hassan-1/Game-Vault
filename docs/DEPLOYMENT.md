@@ -1,6 +1,6 @@
 # Deployment
 
-**Status: not deployed yet.** The host is chosen (Azure Container Apps, below) and the script is written, but nothing here has been run on a real host. The container image has not been built on the development machine (Docker is not installed there); CI builds it on every push to `main`. Treat this page as a checklist, and record what you find the first time in `docs/DEBUGGING.md`.
+**Status: deployed** on Azure Container Apps (URL in the README) with `deploy/azure.ps1`. The page and header checks below passed on it; the deployed load result is in [PERFORMANCE.md](PERFORMANCE.md#deployed-instance). Not yet verified on the live site: signing in as admin, an upload surviving a restart (it will not: there is no volume), and the feedback API with a key. The container image has not been built on the development machine (Docker is not installed there); CI builds it on every push to `main`. Treat this page as a checklist, and record what you find the first time in `docs/DEBUGGING.md`.
 
 ## What the app needs
 

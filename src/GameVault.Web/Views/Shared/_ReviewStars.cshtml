@@ -1,0 +1,3 @@
+@* Filled and empty stars differ by shape, not only by color, and the whole row reads as one phrase. *@
+@model int
+<span class="gv-stars" role="img" aria-label="Rated @Model out of 5"><span aria-hidden="true">@(new string('★', Model))<span class="text-body-secondary">@(new string('☆', 5 - Model))</span></span></span>
