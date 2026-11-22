@@ -47,8 +47,12 @@ public sealed class StudioGameService
         return null;
     }
 
+    /// <summary>Covers shipped with the site (seeded studio games). Allowed so that editing such a game keeps its cover.</summary>
+    public const string BuiltInCoverPrefix = "/img/studio/";
+
     private static bool IsAllowedCover(string url)
         => url.Length <= 500 && (url.StartsWith(UploadsPrefix, StringComparison.Ordinal)
+            || (url.StartsWith(BuiltInCoverPrefix, StringComparison.Ordinal) && !url.Contains(".."))
             || (Uri.TryCreate(url, UriKind.Absolute, out var u) && (u.Scheme == Uri.UriSchemeHttps || u.Scheme == Uri.UriSchemeHttp)));
 
     private static StudioGameDraft Clean(StudioGameDraft d) => d with

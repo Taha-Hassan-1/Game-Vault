@@ -3,7 +3,7 @@
     @if (!string.IsNullOrEmpty(Model.CoverUrl))
     {
         <img src="@ImageUrls.Resized(Model.CoverUrl, ImageUrls.Card)" data-fallback-src="@ImageUrls.FallbackFor(Model.CoverUrl, ImageUrls.Card)"
-             class="card-img-top gv-cover gv-outline" alt="" loading="lazy" decoding="async" />
+             class="card-img-top gv-cover gv-outline @(Model.IsStudioGame ? "gv-cover-square" : "")" alt="" loading="lazy" decoding="async" />
     }
     else
     {

@@ -40,6 +40,8 @@ main:focus { outline: none; }
 
 .gv-cover { aspect-ratio: 16 / 10; object-fit: cover; width: 100%; }
 .gv-cover-lg { aspect-ratio: 3 / 4; }
+/* Studio covers are square art with the title near the bottom; a landscape crop would cut it off. */
+.gv-cover-square { aspect-ratio: 1 / 1; }
 .gv-cover-fallback {
   display: grid; place-items: center; font-size: 3rem; font-weight: 700; color: #fff;
   background: linear-gradient(135deg, hsl(var(--gv-hue, 220) 55% 38%), hsl(calc(var(--gv-hue, 220) + 40) 55% 22%));
