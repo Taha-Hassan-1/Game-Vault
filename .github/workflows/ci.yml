@@ -42,6 +42,19 @@ jobs:
     needs: build-test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t gamevault:ci .
+      # Publishes the image that deploy/azure.ps1 runs. After the first push, make the package public once
+      # (GitHub, your profile, Packages, gamevault, Package settings) so Azure can pull it without credentials.
+      - name: Push to GitHub Container Registry
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"   # registry names must be lower case
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker tag gamevault:ci "ghcr.io/$owner/gamevault:${{ github.sha }}"
+          docker tag gamevault:ci "ghcr.io/$owner/gamevault:latest"
+          docker push "ghcr.io/$owner/gamevault:${{ github.sha }}"
+          docker push "ghcr.io/$owner/gamevault:latest"

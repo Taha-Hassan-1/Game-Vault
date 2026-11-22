@@ -1,6 +1,6 @@
 # Deployment
 
-**Status: not deployed.** There is no live URL yet. The host is chosen on the day (free tiers change their terms), and nothing here has been run on a real host. The container image has not been built on the development machine (Docker is not installed there); CI builds it on every push to `main`. Treat this page as a checklist, and record what you find the first time in `docs/DEBUGGING.md`.
+**Status: not deployed yet.** The host is chosen (Azure Container Apps, below) and the script is written, but nothing here has been run on a real host. The container image has not been built on the development machine (Docker is not installed there); CI builds it on every push to `main`. Treat this page as a checklist, and record what you find the first time in `docs/DEBUGGING.md`.
 
 ## What the app needs
 
@@ -51,7 +51,25 @@ k6 run -e BASE_URL=https://your-host perf/catalogue.k6.js
 
 The target is a 95th-percentile response under 300 ms for cached catalogue pages (`warm_page_duration`).
 
-## Choosing a host (decide on the day)
+## Chosen host: Azure Container Apps next to TeamBoard
+
+[deploy/azure.ps1](../deploy/azure.ps1) reuses TeamBoard's resource group, Container Apps environment and SQL server, and adds one free SQL database (`gamevault`) and one app (`gamevault-taha`). It has not been run yet.
+
+1. Push to `main`. CI builds the image and pushes `ghcr.io/taha-hassan-1/gamevault:latest`.
+2. Once, on GitHub: your profile, Packages, `gamevault`, Package settings, change visibility to public (Azure pulls it without credentials).
+3. Run the script and answer its prompts (the TeamBoard SQL password, the first admin's email and password):
+
+```powershell
+.\deploy\azure.ps1 -Image ghcr.io/taha-hassan-1/gamevault:latest
+```
+
+Notes:
+- It stops instead of creating a paid database if Azure will not give a second free one.
+- No volume: studio uploads are lost on restart or scale-to-zero. Fine for a demo; add Azure Files at `/data/uploads` if it matters.
+- RAWG stays off, so the site shows the 31 sample games.
+- Scale-to-zero means a slow first visit while the app and the database wake.
+
+## Choosing a host (the options that were compared)
 
 Compare the free or lowest tier of the options below at the time, because limits change:
 

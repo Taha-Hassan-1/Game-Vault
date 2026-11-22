@@ -73,6 +73,10 @@ Eighteen short records in [docs/adr/](docs/adr/README.md): the thirteen from the
 | M5 Studio feedback hub | Done; **a real Unity build has not sent a message yet** |
 | M6 Harden and ship | Hardening, performance pass, docs and smoke tests done; **not deployed** |
 
+## To do later
+
+- **Send feedback from the real Untangle build.** Create an API key in `/studio/keys`, add a small HTTP post to the Unity project (the request is in [docs/GUIDE.md](docs/GUIDE.md#sending-feedback-from-a-unity-build)), and check the message arrives in `/studio/inbox`. This closes the "no real build has sent feedback" gap below.
+
 ## Known gaps
 
 Stated plainly so nothing here is a surprise:
