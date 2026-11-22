@@ -1,5 +1,7 @@
 using GameVault.Application.Catalogue;
 using GameVault.Application.Events;
+using GameVault.Application.Metadata;
+using GameVault.Infrastructure.Rawg;
 using GameVault.Infrastructure.Caching;
 using GameVault.Infrastructure.Persistence;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -20,6 +22,12 @@ public static class DependencyInjection
         services.AddScoped<IGameRepository, EfGameRepository>();
         services.AddSingleton<ISimilarityStrategy, TagOverlapSimilarity>();
         services.AddScoped<IDomainEventDispatcher, InProcessDispatcher>();
+
+        services.AddSingleton<IApiUsageStore, EfApiUsageStore>();
+        services.AddScoped<IExternalGameStore, EfExternalGameStore>();
+        services.AddRawgIntegration(config);
+        services.AddScoped<GameImportService>();
+        services.AddHostedService<RawgSyncWorker>();
 
         services.AddHybridCache();
         services.AddScoped<GameCatalog>();

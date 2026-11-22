@@ -13,23 +13,24 @@ namespace GameVault.Tests.Integration;
 /// </summary>
 public sealed class GameVaultFactory : WebApplicationFactory<Program>
 {
-    private static readonly string Server = Environment.GetEnvironmentVariable("GAMEVAULT_TEST_SERVER") ?? @".\SQLEXPRESS";
+    private static readonly string SqlServer = Environment.GetEnvironmentVariable("GAMEVAULT_TEST_SERVER") ?? @".\SQLEXPRESS";
     private readonly string _db = "GameVault_Test_" + Guid.NewGuid().ToString("N");
 
-    private string ConnectionString => $"Server={Server};Database={_db};Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+    private string ConnectionString => $"Server={SqlServer};Database={_db};Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
-        builder.ConfigureAppConfiguration((_, cfg) => cfg.AddInMemoryCollection(
-            new Dictionary<string, string?> { ["ConnectionStrings:GameVault"] = ConnectionString }));
+        // UseSetting, not ConfigureAppConfiguration: Program.cs reads the connection string while building,
+        // before late configuration sources are applied, so the latter silently hit the real dev database.
+        builder.UseSetting("ConnectionStrings:GameVault", ConnectionString);
     }
 
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
         if (!disposing) return;
-        using var cn = new SqlConnection($"Server={Server};Database=master;Trusted_Connection=True;TrustServerCertificate=True");
+        using var cn = new SqlConnection($"Server={SqlServer};Database=master;Trusted_Connection=True;TrustServerCertificate=True");
         cn.Open();
         using var cmd = cn.CreateCommand();
         cmd.CommandText = $"IF DB_ID('{_db}') IS NOT NULL BEGIN ALTER DATABASE [{_db}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{_db}]; END";

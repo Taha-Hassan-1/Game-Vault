@@ -25,6 +25,8 @@ public class GameVaultDbContext : IdentityDbContext<AppUser>
     public DbSet<SuggestionVote> SuggestionVotes => Set<SuggestionVote>();
     public DbSet<FeedbackMessage> FeedbackMessages => Set<FeedbackMessage>();
     public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+    public DbSet<ApiUsage> ApiUsage => Set<ApiUsage>();
+    public DbSet<SyncState> SyncStates => Set<SyncState>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -103,6 +105,18 @@ public class GameVaultDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
             e.HasOne(x => x.Game).WithMany().HasForeignKey(x => x.GameId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => new { x.Status, x.CreatedAt });
+        });
+
+        b.Entity<ApiUsage>(e =>
+        {
+            e.HasKey(x => new { x.Date, x.Provider });
+            e.Property(x => x.Provider).HasMaxLength(32);
+        });
+
+        b.Entity<SyncState>(e =>
+        {
+            e.HasKey(x => x.Key);
+            e.Property(x => x.Key).HasMaxLength(64);
         });
 
         b.Entity<ApiKey>(e =>

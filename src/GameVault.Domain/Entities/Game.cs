@@ -18,6 +18,9 @@ public class Game
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ExternalFetchedAt { get; set; }
 
+    /// <summary>When description and screenshots were last fetched from the provider; null until a game page is first opened.</summary>
+    public DateTime? DetailsFetchedAt { get; set; }
+
     public List<Genre> Genres { get; set; } = new();
     public List<Platform> Platforms { get; set; } = new();
     public List<Tag> Tags { get; set; } = new();

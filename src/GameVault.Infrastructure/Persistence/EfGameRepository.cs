@@ -86,7 +86,7 @@ public sealed class EfGameRepository : IGameRepository
     }
 
     public async Task<SimilarityCandidate?> GetCandidateAsync(string slug, CancellationToken ct = default)
-        => (await Candidates(_db.Games.AsNoTracking().Where(g => g.Slug == slug), 1, ct)).FirstOrDefault();
+        => (await Candidates(_db.Games.AsNoTracking().Where(g => g.Slug == slug).OrderBy(g => g.Id), 1, ct)).FirstOrDefault();
 
     public Task<IReadOnlyList<SimilarityCandidate>> GetCandidatePoolAsync(string excludeSlug, int poolSize, CancellationToken ct = default)
         => Candidates(_db.Games.AsNoTracking().Where(g => g.Slug != excludeSlug)

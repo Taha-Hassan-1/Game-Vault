@@ -104,6 +104,23 @@ namespace GameVault.Infrastructure.Persistence.Migrations
                     b.ToTable("ApiKeys");
                 });
 
+            modelBuilder.Entity("GameVault.Domain.Entities.ApiUsage", b =>
+                {
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Provider")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.HasKey("Date", "Provider");
+
+                    b.ToTable("ApiUsage");
+                });
+
             modelBuilder.Entity("GameVault.Domain.Entities.FeedbackMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -173,6 +190,9 @@ namespace GameVault.Infrastructure.Persistence.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DetailsFetchedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("ExternalFetchedAt")
                         .HasColumnType("datetime2");
@@ -421,6 +441,20 @@ namespace GameVault.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("SuggestionVotes");
+                });
+
+            modelBuilder.Entity("GameVault.Domain.Entities.SyncState", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("int");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("SyncStates");
                 });
 
             modelBuilder.Entity("GameVault.Domain.Entities.Tag", b =>
