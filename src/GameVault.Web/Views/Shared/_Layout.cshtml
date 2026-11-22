@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] is string t ? t + " · " : "")GameVault</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-md border-bottom gv-nav">
+            <div class="container">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">🎮 GameVault</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="nav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/games">Browse</a></li>
+                    </ul>
+                    <form class="d-flex" role="search" method="get" action="/games">
+                        <input class="form-control me-2" type="search" name="search" placeholder="Search games" aria-label="Search games" />
+                        <button class="btn btn-outline-primary" type="submit">Search</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main role="main" class="container py-4 flex-grow-1">
+        @RenderBody()
+    </main>
+    <footer class="border-top py-3 small text-body-secondary">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span>&copy; 2026 GameVault</span>
+            <span>Game data and images from <a href="https://rawg.io" rel="noopener" target="_blank">RAWG</a></span>
+        </div>
+    </footer>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,11 @@
+@model (double Average, int Count)
+@if (Model.Count == 0)
+{
+    <span class="text-body-secondary">No ratings yet</span>
+}
+else
+{
+    <span class="gv-stars" title="@Model.Average.ToString("0.0") out of 5">
+        <span aria-hidden="true">★</span> @Model.Average.ToString("0.0") <span class="text-body-secondary">(@Model.Count)</span>
+    </span>
+}

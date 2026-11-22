@@ -1,0 +1,15 @@
+﻿@model GameVault.Application.Catalogue.HomeModel
+@using GameVault.Web.Models
+@{
+    ViewData["Title"] = "Home";
+}
+
+<section class="gv-hero rounded-4 p-4 p-md-5 mb-5">
+    <h1 class="display-5 fw-bold">Find your next game. Tell the makers what you think.</h1>
+    <p class="lead mb-4">Browse the catalogue, rate and review what you play, and shape the studio's own games through the suggestion board.</p>
+    <a class="btn btn-primary btn-lg" href="/games">Browse games</a>
+</section>
+
+@await Html.PartialAsync("_GameSection", new GameSectionModel("From the studio", Model.Featured))
+@await Html.PartialAsync("_GameSection", new GameSectionModel("Top rated", Model.TopRated, "/games?sort=TopRated"))
+@await Html.PartialAsync("_GameSection", new GameSectionModel("Recently added", Model.Recent, "/games"))

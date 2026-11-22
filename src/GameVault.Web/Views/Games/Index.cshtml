@@ -1,0 +1,77 @@
+@model GameVault.Web.Models.CatalogueViewModel
+@using GameVault.Application.Catalogue
+@{
+    ViewData["Title"] = "Browse games";
+    var q = Model.Query;
+}
+
+<h1 class="h3 mb-4">Browse games</h1>
+
+<form method="get" action="/games" class="row g-2 mb-4 align-items-end">
+    <div class="col-12 col-md-4">
+        <label class="form-label small" for="search">Search</label>
+        <input id="search" name="search" class="form-control" value="@q.Search" placeholder="Title or description" />
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small" for="genre">Genre</label>
+        <select id="genre" name="genre" class="form-select">
+            <option value="">All</option>
+            @foreach (var x in Model.Facets.Genres) { <option value="@x.Slug" selected="@(x.Slug == q.Genre)">@x.Name</option> }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small" for="platform">Platform</label>
+        <select id="platform" name="platform" class="form-select">
+            <option value="">All</option>
+            @foreach (var x in Model.Facets.Platforms) { <option value="@x.Slug" selected="@(x.Slug == q.Platform)">@x.Name</option> }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small" for="tag">Tag</label>
+        <select id="tag" name="tag" class="form-select">
+            <option value="">All</option>
+            @foreach (var x in Model.Facets.Tags) { <option value="@x.Slug" selected="@(x.Slug == q.Tag)">@x.Name</option> }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small" for="sort">Sort</label>
+        <select id="sort" name="sort" class="form-select">
+            @foreach (var s in Enum.GetValues<GameSort>()) { <option value="@s" selected="@(s == q.Sort)">@s</option> }
+        </select>
+    </div>
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Apply</button>
+        <a class="btn btn-outline-secondary" href="/games">Reset</a>
+    </div>
+</form>
+
+<p class="text-body-secondary">@Model.Result.TotalCount game@(Model.Result.TotalCount == 1 ? "" : "s")</p>
+
+@if (Model.Result.Items.Count == 0)
+{
+    <div class="alert alert-secondary">No games match those filters.</div>
+}
+else
+{
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+        @foreach (var g in Model.Result.Items)
+        {
+            <div class="col"><partial name="_GameCard" model="g" /></div>
+        }
+    </div>
+}
+
+@if (Model.Result.TotalPages > 1)
+{
+    <nav class="mt-4" aria-label="Pages">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.Result.HasPrevious ? "" : "disabled")">
+                <a class="page-link" asp-action="Index" asp-all-route-data="Model.PageRoute(Model.Result.Page - 1)">Previous</a>
+            </li>
+            <li class="page-item disabled"><span class="page-link">Page @Model.Result.Page of @Model.Result.TotalPages</span></li>
+            <li class="page-item @(Model.Result.HasNext ? "" : "disabled")">
+                <a class="page-link" asp-action="Index" asp-all-route-data="Model.PageRoute(Model.Result.Page + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}
