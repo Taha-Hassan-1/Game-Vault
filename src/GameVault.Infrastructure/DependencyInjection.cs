@@ -1,6 +1,8 @@
 using GameVault.Application.Catalogue;
 using GameVault.Application.Events;
+using GameVault.Application.Lists;
 using GameVault.Application.Metadata;
+using GameVault.Application.Reviews;
 using GameVault.Infrastructure.Rawg;
 using GameVault.Infrastructure.Caching;
 using GameVault.Infrastructure.Persistence;
@@ -28,6 +30,13 @@ public static class DependencyInjection
         services.AddRawgIntegration(config);
         services.AddScoped<GameImportService>();
         services.AddHostedService<RawgSyncWorker>();
+
+        services.AddScoped<IReviewRepository, EfReviewRepository>();
+        services.AddScoped<IListRepository, EfListRepository>();
+        services.AddScoped<ReviewService>();
+        services.AddScoped<ModerationService>();
+        services.AddScoped<ListService>();
+        services.AddScoped<IDomainEventHandler<ReviewChanged>, RatingRecalculator>();
 
         services.AddHybridCache();
         services.AddScoped<GameCatalog>();

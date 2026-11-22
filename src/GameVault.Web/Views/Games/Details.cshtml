@@ -1,61 +1,85 @@
-@model GameVault.Application.Catalogue.GameDetails
+@model GameVault.Web.Models.GameDetailsViewModel
+@using GameVault.Domain
 @{
-    ViewData["Title"] = Model.Title;
+    var game = Model.Game;
+    ViewData["Title"] = game.Title;
+    var gameUrl = Url.RouteUrl("game", new { slug = game.Slug });
 }
 
-<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="/games">Games</a></li><li class="breadcrumb-item active">@Model.Title</li></ol></nav>
+<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="/games">Games</a></li><li class="breadcrumb-item active">@game.Title</li></ol></nav>
 
 <div class="row g-4">
     <div class="col-12 col-md-4">
-        @if (!string.IsNullOrEmpty(Model.CoverUrl))
+        @if (!string.IsNullOrEmpty(game.CoverUrl))
         {
-            <img src="@Model.CoverUrl" class="img-fluid rounded-3" alt="Cover of @Model.Title" />
+            <img src="@game.CoverUrl" class="img-fluid rounded-3" alt="Cover of @game.Title" />
         }
         else
         {
-            <div class="gv-cover gv-cover-fallback gv-cover-lg rounded-3" style="--gv-hue:@((Model.Id * 47) % 360)" aria-hidden="true">@Model.Title[0]</div>
+            <div class="gv-cover gv-cover-fallback gv-cover-lg rounded-3" style="--gv-hue:@((game.Id * 47) % 360)" aria-hidden="true">@game.Title[0]</div>
         }
     </div>
     <div class="col-12 col-md-8">
-        <h1 class="h2">@Model.Title @if (Model.IsStudioGame) { <span class="badge text-bg-primary align-middle fs-6">Studio game</span> }</h1>
-        <div class="mb-2"><partial name="_Stars" model="@((Model.RatingAverage, Model.RatingCount))" /></div>
+        <h1 class="h2">@game.Title @if (game.IsStudioGame) { <span class="badge text-bg-primary align-middle fs-6">Studio game</span> }</h1>
+        <div class="mb-2"><partial name="_Stars" model="@((game.RatingAverage, game.RatingCount))" /></div>
         <p class="text-body-secondary mb-3">
-            @if (Model.ReleaseDate is { } d) { <span>Released @d.Year</span> }
+            @if (game.ReleaseDate is { } d) { <span>Released @d.Year</span> }
         </p>
-        <p>@Model.Description</p>
+        <p>@game.Description</p>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            @if (Model.IsSignedIn)
+            {
+                var wished = Model.Lists.Contains(ListKind.Wishlist);
+                var played = Model.Lists.Contains(ListKind.Played);
+                <form asp-controller="Lists" asp-action="Set" asp-route-slug="@game.Slug" asp-route-kind="Wishlist" method="post">
+                    <input type="hidden" name="present" value="@((!wished).ToString().ToLowerInvariant())" />
+                    <button class="btn btn-sm @(wished ? "btn-secondary" : "btn-outline-secondary")" type="submit">@(wished ? "✓ On your wishlist" : "Add to wishlist")</button>
+                </form>
+                <form asp-controller="Lists" asp-action="Set" asp-route-slug="@game.Slug" asp-route-kind="Played" method="post">
+                    <input type="hidden" name="present" value="@((!played).ToString().ToLowerInvariant())" />
+                    <button class="btn btn-sm @(played ? "btn-secondary" : "btn-outline-secondary")" type="submit">@(played ? "✓ Played" : "Mark as played")</button>
+                </form>
+                <a class="btn btn-sm btn-primary" href="/games/@game.Slug/reviews">@(Model.MyReview is null ? "Write a review" : "Edit your review")</a>
+            }
+            else
+            {
+                <a class="btn btn-sm btn-primary" href="/account/login?returnUrl=@Uri.EscapeDataString(gameUrl ?? "/")">Sign in to review and save games</a>
+            }
+        </div>
 
         <dl class="row mb-0">
-            @if (Model.Genres.Count > 0)
+            @if (game.Genres.Count > 0)
             {
                 <dt class="col-sm-3">Genres</dt>
-                <dd class="col-sm-9">@foreach (var x in Model.Genres) { <a class="badge text-bg-secondary text-decoration-none me-1" href="/games?genre=@x.Slug">@x.Name</a> }</dd>
+                <dd class="col-sm-9">@foreach (var x in game.Genres) { <a class="badge text-bg-secondary text-decoration-none me-1" href="/games?genre=@x.Slug">@x.Name</a> }</dd>
             }
-            @if (Model.Platforms.Count > 0)
+            @if (game.Platforms.Count > 0)
             {
                 <dt class="col-sm-3">Platforms</dt>
-                <dd class="col-sm-9">@foreach (var x in Model.Platforms) { <a class="badge text-bg-secondary text-decoration-none me-1" href="/games?platform=@x.Slug">@x.Name</a> }</dd>
+                <dd class="col-sm-9">@foreach (var x in game.Platforms) { <a class="badge text-bg-secondary text-decoration-none me-1" href="/games?platform=@x.Slug">@x.Name</a> }</dd>
             }
-            @if (Model.Tags.Count > 0)
+            @if (game.Tags.Count > 0)
             {
                 <dt class="col-sm-3">Tags</dt>
-                <dd class="col-sm-9">@foreach (var x in Model.Tags) { <a class="badge text-bg-dark border text-decoration-none me-1" href="/games?tag=@x.Slug">@x.Name</a> }</dd>
+                <dd class="col-sm-9">@foreach (var x in game.Tags) { <a class="badge text-bg-dark border text-decoration-none me-1" href="/games?tag=@x.Slug">@x.Name</a> }</dd>
             }
         </dl>
-        @if (Model.IsRawg)
+        @if (game.IsRawg)
         {
             <p class="small text-body-secondary mt-3">Metadata from <a href="https://rawg.io" rel="noopener" target="_blank">RAWG</a>.</p>
         }
     </div>
 </div>
 
-@if (Model.Screenshots.Count > 0)
+@if (game.Screenshots.Count > 0)
 {
     <section class="mt-5">
         <h2 class="h4 mb-3">Screenshots</h2>
         <div class="row row-cols-2 row-cols-md-4 g-2">
-            @foreach (var s in Model.Screenshots)
+            @foreach (var s in game.Screenshots)
             {
-                <div class="col"><img src="@s" class="img-fluid rounded-2" alt="Screenshot of @Model.Title" loading="lazy" /></div>
+                <div class="col"><img src="@s" class="img-fluid rounded-2" alt="Screenshot of @game.Title" loading="lazy" /></div>
             }
         </div>
     </section>
@@ -63,24 +87,40 @@
 
 <section class="mt-5">
     <h2 class="h4 mb-3">Reviews</h2>
-    @if (Model.Reviews.Count == 0)
+    @if (Model.MyReview is { IsHidden: true })
+    {
+        <div class="alert alert-warning">A moderator has hidden your review, so others cannot see it.</div>
+    }
+    @if (game.Reviews.Count == 0)
     {
         <p class="text-body-secondary">No reviews yet.</p>
     }
     else
     {
-        foreach (var r in Model.Reviews)
+        foreach (var r in game.Reviews)
         {
+            var mine = r.UserId == Model.CurrentUserId;
             <article class="border-bottom py-3">
                 <div class="d-flex justify-content-between">
-                    <strong>@r.AuthorName</strong>
+                    <strong>@r.AuthorName @if (mine) { <span class="badge text-bg-secondary">You</span> }</strong>
                     <span class="gv-stars">@(new string('★', r.Stars))<span class="text-body-secondary">@(new string('★', 5 - r.Stars))</span></span>
                 </div>
                 <div class="small text-body-secondary">@r.CreatedAt.ToString("d MMM yyyy")@(r.EditedAt is not null ? " (edited)" : "")</div>
-                <p class="mb-0 mt-2" style="white-space:pre-wrap">@r.Body</p>
+                @if (!string.IsNullOrWhiteSpace(r.Body)) { <p class="mb-0 mt-2" style="white-space:pre-wrap">@r.Body</p> }
+                @if (Model.IsSignedIn && !mine)
+                {
+                    <details class="mt-2 small">
+                        <summary class="text-body-secondary">Report</summary>
+                        <form asp-controller="Reviews" asp-action="Report" asp-route-id="@r.Id" method="post" class="d-flex gap-2 mt-2">
+                            <input type="hidden" name="slug" value="@game.Slug" />
+                            <input class="form-control form-control-sm" name="reason" maxlength="200" placeholder="What is wrong with this review?" />
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Send</button>
+                        </form>
+                    </details>
+                }
             </article>
         }
     }
 </section>
 
-@await Component.InvokeAsync("SimilarGames", new { slug = Model.Slug })
+@await Component.InvokeAsync("SimilarGames", new { slug = game.Slug })

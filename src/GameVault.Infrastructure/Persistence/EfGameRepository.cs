@@ -59,7 +59,7 @@ public sealed class EfGameRepository : IGameRepository
             where r.GameId == row.Id && !r.IsHidden
             join u in _db.Users on r.UserId equals u.Id
             orderby r.CreatedAt descending
-            select new ReviewItem(r.Id, u.DisplayName, r.Stars, r.Body, r.CreatedAt, r.EditedAt))
+            select new ReviewItem(r.Id, r.UserId, u.DisplayName, r.Stars, r.Body, r.CreatedAt, r.EditedAt))
             .Take(50).ToListAsync(ct);
 
         return new GameDetails(row.Id, row.Slug, row.Title, row.Description, row.CoverUrl, row.ReleaseDate,
@@ -98,7 +98,7 @@ public sealed class EfGameRepository : IGameRepository
 
     private static async Task<IReadOnlyList<SimilarityCandidate>> Candidates(IQueryable<Game> q, int take, CancellationToken ct)
     {
-        var rows = await q.Take(take).Select(g => new
+        var rows = await q.Take(take).AsSplitQuery().Select(g => new
         {
             Card = new GameCard(g.Id, g.Slug, g.Title, g.CoverUrl, g.ReleaseDate, g.RatingAverage, g.RatingCount,
                 g.IsStudioGame, g.Genres.OrderBy(x => x.Name).Select(x => x.Name).ToList()),

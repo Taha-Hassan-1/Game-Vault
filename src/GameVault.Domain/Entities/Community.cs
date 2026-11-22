@@ -20,6 +20,15 @@ public class Review
     }
 }
 
+/// <summary>A member's report on a review; one per member per review. Moderators clear them when they act.</summary>
+public class ReviewReport
+{
+    public int ReviewId { get; set; }
+    public string UserId { get; set; } = "";
+    public string Reason { get; set; } = "";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
 public class ListEntry
 {
     public string UserId { get; set; } = "";

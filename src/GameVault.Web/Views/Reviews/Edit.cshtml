@@ -1,0 +1,43 @@
+@model GameVault.Web.Models.ReviewFormModel
+@{
+    ViewData["Title"] = (Model.Exists ? "Edit your review of " : "Review ") + Model.GameTitle;
+}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <h1 class="h3 mb-1">@(Model.Exists ? "Edit your review" : "Write a review")</h1>
+        <p class="text-body-secondary mb-4"><a asp-route="game" asp-route-slug="@Model.Slug">@Model.GameTitle</a></p>
+
+        @if (Model.IsHidden)
+        {
+            <div class="alert alert-warning">A moderator has hidden your review, so it is not shown to others or counted in the rating.</div>
+        }
+
+        <form asp-controller="Reviews" asp-action="Save" asp-route-slug="@Model.Slug" method="post">
+            <div asp-validation-summary="All" class="alert alert-danger"></div>
+            <div class="mb-3">
+                <label asp-for="Stars" class="form-label">Rating</label>
+                <select asp-for="Stars" class="form-select">
+                    <option value="0" disabled selected="@(Model.Stars == 0)">Choose a rating</option>
+                    @for (var i = 5; i >= 1; i--)
+                    {
+                        <option value="@i" selected="@(Model.Stars == i)">@(new string('★', i)) (@i)</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Body" class="form-label">Review (optional)</label>
+                <textarea asp-for="Body" class="form-control" rows="6" maxlength="4000"></textarea>
+                <div class="form-text">Plain text only.</div>
+            </div>
+            <button class="btn btn-primary" type="submit">Save review</button>
+            <a class="btn btn-outline-secondary" asp-route="game" asp-route-slug="@Model.Slug">Cancel</a>
+        </form>
+
+        @if (Model.Exists)
+        {
+            <form asp-controller="Reviews" asp-action="Delete" asp-route-slug="@Model.Slug" method="post" class="mt-4">
+                <button class="btn btn-outline-danger btn-sm" type="submit">Delete my review</button>
+            </form>
+        }
+    </div>
+</div>

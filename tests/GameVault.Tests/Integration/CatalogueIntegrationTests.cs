@@ -11,12 +11,14 @@ namespace GameVault.Tests.Integration;
 /// Runs the real app against a throwaway database on the local SQL Server (Docker is not required).
 /// Set GAMEVAULT_TEST_SERVER to point at another instance, for example in CI.
 /// </summary>
-public sealed class GameVaultFactory : WebApplicationFactory<Program>
+public class GameVaultFactory : WebApplicationFactory<Program>
 {
     private static readonly string SqlServer = Environment.GetEnvironmentVariable("GAMEVAULT_TEST_SERVER") ?? @".\SQLEXPRESS";
     private readonly string _db = "GameVault_Test_" + Guid.NewGuid().ToString("N");
 
     private string ConnectionString => $"Server={SqlServer};Database={_db};Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+
+    protected virtual IReadOnlyDictionary<string, string?> ExtraSettings { get; } = new Dictionary<string, string?>();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -24,6 +26,7 @@ public sealed class GameVaultFactory : WebApplicationFactory<Program>
         // UseSetting, not ConfigureAppConfiguration: Program.cs reads the connection string while building,
         // before late configuration sources are applied, so the latter silently hit the real dev database.
         builder.UseSetting("ConnectionStrings:GameVault", ConnectionString);
+        foreach (var (key, value) in ExtraSettings) builder.UseSetting(key, value);
     }
 
     protected override void Dispose(bool disposing)

@@ -40,7 +40,7 @@ public sealed record GameCard(
 
 public sealed record TaxonItem(string Name, string Slug);
 
-public sealed record ReviewItem(int Id, string AuthorName, int Stars, string Body, DateTime CreatedAt, DateTime? EditedAt);
+public sealed record ReviewItem(int Id, string UserId, string AuthorName, int Stars, string Body, DateTime CreatedAt, DateTime? EditedAt);
 
 public sealed record GameDetails(
     int Id, string Slug, string Title, string Description, string? CoverUrl, DateOnly? ReleaseDate,

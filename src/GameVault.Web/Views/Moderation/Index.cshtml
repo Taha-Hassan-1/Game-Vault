@@ -1,0 +1,53 @@
+@model IReadOnlyList<GameVault.Application.Reviews.ModerationItem>
+@{
+    ViewData["Title"] = "Moderation";
+}
+<h1 class="h3 mb-4">Moderation</h1>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-secondary">Nothing to review: no reported or hidden reviews.</div>
+}
+
+@foreach (var r in Model)
+{
+    <article class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between flex-wrap gap-2">
+                <div>
+                    <a asp-route="game" asp-route-slug="@r.GameSlug" class="fw-semibold">@r.GameTitle</a>
+                    <span class="text-body-secondary"> · by @r.AuthorName · @r.CreatedAt.ToString("d MMM yyyy")</span>
+                </div>
+                <div>
+                    <span class="gv-stars">@(new string('★', r.Stars))</span>
+                    @if (r.IsHidden) { <span class="badge text-bg-warning">Hidden</span> }
+                    @if (r.Reports.Count > 0) { <span class="badge text-bg-danger">@r.Reports.Count report@(r.Reports.Count == 1 ? "" : "s")</span> }
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(r.Body)) { <p class="mt-3 mb-2" style="white-space:pre-wrap">@r.Body</p> }
+            @if (r.Reports.Count > 0)
+            {
+                <ul class="small text-body-secondary mb-3">
+                    @foreach (var reason in r.Reports) { <li>@reason</li> }
+                </ul>
+            }
+            <div class="d-flex gap-2 mt-3">
+                @if (r.IsHidden)
+                {
+                    <form asp-controller="Moderation" asp-action="Restore" asp-route-id="@r.ReviewId" method="post">
+                        <button class="btn btn-sm btn-outline-success" type="submit">Restore</button>
+                    </form>
+                }
+                else
+                {
+                    <form asp-controller="Moderation" asp-action="Hide" asp-route-id="@r.ReviewId" method="post">
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Hide</button>
+                    </form>
+                    <form asp-controller="Moderation" asp-action="Dismiss" asp-route-id="@r.ReviewId" method="post">
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">Dismiss reports</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </article>
+}

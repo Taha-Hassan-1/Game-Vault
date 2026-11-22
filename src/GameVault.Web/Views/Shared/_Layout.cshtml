@@ -20,15 +20,37 @@
                         <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
                         <li class="nav-item"><a class="nav-link" href="/games">Browse</a></li>
                     </ul>
-                    <form class="d-flex" role="search" method="get" action="/games">
+                    <form class="d-flex me-md-3" role="search" method="get" action="/games">
                         <input class="form-control me-2" type="search" name="search" placeholder="Search games" aria-label="Search games" />
                         <button class="btn btn-outline-primary" type="submit">Search</button>
                     </form>
+                    <ul class="navbar-nav align-items-md-center">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item"><a class="nav-link" href="/me/lists">My lists</a></li>
+                            @if (User.IsInRole("Moderator") || User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item"><a class="nav-link" href="/moderation">Moderation</a></li>
+                            }
+                            <li class="nav-item"><a class="nav-link" href="/account/profile">@(User.FindFirst("display_name")?.Value ?? "Profile")</a></li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post">
+                                    <button class="btn btn-link nav-link" type="submit">Sign out</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" href="/account/login">Sign in</a></li>
+                            <li class="nav-item"><a class="btn btn-primary btn-sm ms-md-2" href="/account/register">Sign up</a></li>
+                        }
+                    </ul>
                 </div>
             </div>
         </nav>
     </header>
     <main role="main" class="container py-4 flex-grow-1">
+        <partial name="_Flash" />
         @RenderBody()
     </main>
     <footer class="border-top py-3 small text-body-secondary">

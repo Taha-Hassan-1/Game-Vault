@@ -1,0 +1,14 @@
+@model GameVault.Web.Models.ListsViewModel
+@using GameVault.Web.Models
+@{
+    ViewData["Title"] = "My lists";
+}
+<h1 class="h3 mb-4">My lists</h1>
+
+@if (Model.Wishlist.Count == 0 && Model.Played.Count == 0)
+{
+    <div class="alert alert-secondary">Nothing here yet. Open a game and use "Add to wishlist" or "Mark as played".</div>
+}
+
+@await Html.PartialAsync("_GameSection", new GameSectionModel("Wishlist", Model.Wishlist))
+@await Html.PartialAsync("_GameSection", new GameSectionModel("Played", Model.Played))

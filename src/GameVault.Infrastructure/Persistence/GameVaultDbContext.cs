@@ -20,6 +20,7 @@ public class GameVaultDbContext : IdentityDbContext<AppUser>
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<Screenshot> Screenshots => Set<Screenshot>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<ReviewReport> ReviewReports => Set<ReviewReport>();
     public DbSet<ListEntry> ListEntries => Set<ListEntry>();
     public DbSet<Suggestion> Suggestions => Set<Suggestion>();
     public DbSet<SuggestionVote> SuggestionVotes => Set<SuggestionVote>();
@@ -68,6 +69,14 @@ public class GameVaultDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.Body).HasMaxLength(4000);
             e.HasIndex(x => new { x.GameId, x.UserId }).IsUnique();
             e.HasOne(x => x.Game).WithMany(x => x.Reviews).HasForeignKey(x => x.GameId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        b.Entity<ReviewReport>(e =>
+        {
+            e.HasKey(x => new { x.ReviewId, x.UserId });
+            e.Property(x => x.Reason).HasMaxLength(200).IsRequired();
+            e.HasOne<Review>().WithMany().HasForeignKey(x => x.ReviewId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<AppUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.NoAction);
         });
 
