@@ -45,7 +45,11 @@ public class GameVaultDbContext : IdentityDbContext<AppUser>
             e.HasIndex(x => x.Slug).IsUnique();
             e.HasIndex(x => new { x.Source, x.ExternalId }).IsUnique().HasFilter("[ExternalId] IS NOT NULL");
             e.HasIndex(x => x.Title);
-            e.HasIndex(x => new { x.RatingAverage, x.RatingCount });
+            // One index per catalogue sort, with the same key order as the ORDER BY (tie-break on Title included) so the first
+            // page is read straight off the index instead of scanning and sorting every game. Measured in docs/PERFORMANCE.md.
+            e.HasIndex(x => new { x.CreatedAt, x.Title }).IsDescending(true, false).HasDatabaseName("IX_Games_CreatedAt_Title");
+            e.HasIndex(x => new { x.ReleaseDate, x.Title }).IsDescending(true, false).HasDatabaseName("IX_Games_ReleaseDate_Title");
+            e.HasIndex(x => new { x.RatingAverage, x.RatingCount, x.Title }).IsDescending(true, true, false).HasDatabaseName("IX_Games_Rating_Title");
             e.HasMany(x => x.Genres).WithMany(x => x.Games).UsingEntity("GameGenre");
             e.HasMany(x => x.Platforms).WithMany(x => x.Games).UsingEntity("GamePlatform");
             e.HasMany(x => x.Tags).WithMany(x => x.Games).UsingEntity("GameTag");

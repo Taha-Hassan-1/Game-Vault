@@ -1,0 +1,13 @@
+﻿
+/lib/bootstrap/dist/css/bootstrap.min.css?v=PI8n5gCcz9cQqQXm3PEtDuPG8qx9oFsFctPg0S5zb8g
+    versioned URL (now):  Cache-Control: no-cache   ETag: "PI8n5gCcz9cQqQXm3PEtDuPG8qx9oFsFctPg0S5zb8g="
+    plain URL (before):   Cache-Control: no-cache   ETag: "PI8n5gCcz9cQqQXm3PEtDuPG8qx9oFsFctPg0S5zb8g="
+/css/site.css?v=AmjpdXC2ePV_qEy3mRZBpyXk2aEr_7Y4rnDE92yvS_k
+    versioned URL (now):  Cache-Control: no-cache   ETag: "AmjpdXC2ePV/qEy3mRZBpyXk2aEr/7Y4rnDE92yvS/k="
+    plain URL (before):   Cache-Control: no-cache   ETag: "AmjpdXC2ePV/qEy3mRZBpyXk2aEr/7Y4rnDE92yvS/k="
+/lib/bootstrap/dist/js/bootstrap.bundle.min.js?v=CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC-mjoJimHGw
+    versioned URL (now):  Cache-Control: no-cache   ETag: "CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw="
+    plain URL (before):   Cache-Control: no-cache   ETag: "CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw="
+/js/site.js?v=g5vsJyeLKz_fcXwiwk2QGcRQ8b1Es0Z7f2izT3hDFUg
+    versioned URL (now):  Cache-Control: no-cache   ETag: "g5vsJyeLKz/fcXwiwk2QGcRQ8b1Es0Z7f2izT3hDFUg="
+    plain URL (before):   Cache-Control: no-cache   ETag: "g5vsJyeLKz/fcXwiwk2QGcRQ8b1Es0Z7f2izT3hDFUg="

@@ -12,9 +12,17 @@ html { font-size: 15px; }
 .gv-cover-lg { aspect-ratio: 3 / 4; }
 .gv-cover-fallback {
   display: grid; place-items: center; font-size: 3rem; font-weight: 700; color: #fff;
-  background: linear-gradient(135deg, hsl(var(--gv-hue) 55% 38%), hsl(calc(var(--gv-hue) + 40) 55% 22%));
+  background: linear-gradient(135deg, hsl(var(--gv-hue, 220) 55% 38%), hsl(calc(var(--gv-hue, 220) + 40) 55% 22%));
   border-radius: var(--bs-card-inner-border-radius) var(--bs-card-inner-border-radius) 0 0;
 }
 .gv-cover-lg { border-radius: var(--bs-border-radius-lg); }
 
+/* Twelve preset hues for covers (see Hue.cs); classes keep the CSP free of inline styles. */
+.gv-hue-0 { --gv-hue: 0; }   .gv-hue-1 { --gv-hue: 30; }  .gv-hue-2 { --gv-hue: 60; }   .gv-hue-3 { --gv-hue: 90; }
+.gv-hue-4 { --gv-hue: 120; } .gv-hue-5 { --gv-hue: 150; } .gv-hue-6 { --gv-hue: 180; }  .gv-hue-7 { --gv-hue: 210; }
+.gv-hue-8 { --gv-hue: 240; } .gv-hue-9 { --gv-hue: 270; } .gv-hue-10 { --gv-hue: 300; } .gv-hue-11 { --gv-hue: 330; }
+
 .gv-stars { color: #f5b942; white-space: nowrap; }
+.gv-prewrap { white-space: pre-wrap; }
+.gv-vote-col { min-width: 3.5rem; }
+.gv-thumb { max-height: 180px; }

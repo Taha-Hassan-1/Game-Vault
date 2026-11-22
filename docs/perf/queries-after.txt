@@ -1,0 +1,27 @@
+﻿Catalogue size: 5000 games. Label: after: sort indexes, flat similar candidates, candidate order matches the index. 40 runs each, median and p95 in ms.
+
+variant                                                                            median      p95  queries     reads
+---------------------------------------------------------------------------------------------------------------------
+catalogue page, SHIPPED (projection, server paging)                                   1.2      1.5        2       147
+catalogue page, NAIVE (tracked graph, paged in memory)                              747.2    875.2        4      1532
+12 cards with genres, SHIPPED (one projected query + count)                           1.0      1.7        2       144
+12 cards with genres, NAIVE N+1 (a genre query per game)                              3.4      4.0       14       183
+sort Newest, page 1                                                                   0.9      1.2        2       147
+sort Newest, page 200 (deep)                                                          3.3      5.3        2      7773
+sort Released, page 1                                                                 1.0      1.3        2       153
+sort Released, page 200 (deep)                                                        3.5      6.9        2      7784
+sort TopRated, page 1                                                                 1.0      1.2        2       147
+sort TopRated, page 200 (deep)                                                        3.9      6.1        2      7776
+sort Title, page 1                                                                    0.9      1.1        2       147
+sort Title, page 200 (deep)                                                           3.9      6.0        2      7787
+filter genre-03 + TopRated, page 1                                                    2.1      2.9        2      1058
+search 'dragon' in title OR description, SHIPPED (LIKE %term%)                       28.9     51.0        2      1196
+search 'dragon' in title only (LIKE %term%)                                           4.6      5.7        2        38
+search 'dragon' title prefix (LIKE term%, can seek the Title index)                   0.4      0.6        2        10
+top rated page, SHIPPED (RatingAverage column + index)                                0.2      0.3        1         2
+top rated page, NAIVE (AVG over reviews on every read)                               23.3     33.2        1      3410
+similar candidates x200, SHIPPED (M5: split query; M6: flat rows)                    11.0     14.3        3      3767
+similar candidates x200, single joined query                                         21.8     25.4        1      1469
+similar candidates x200, flat rows (3 plain queries)                                 12.3     15.6        3      1978
+home page data, SHIPPED                                                               1.6      1.9        3      1236
+game details data, SHIPPED                                                            1.2      1.4        6        61

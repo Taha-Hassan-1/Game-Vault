@@ -1,0 +1,14 @@
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26200.9974/25H2/2025Update/HudsonValley2)
+AMD Ryzen 5 7500F 3.70GHz, 1 CPU, 12 logical and 6 physical cores
+.NET SDK 10.0.202
+  [Host]     : .NET 10.0.6 (10.0.6, 10.0.626.17701), X64 RyuJIT x86-64-v4
+  DefaultJob : .NET 10.0.6 (10.0.6, 10.0.626.17701), X64 RyuJIT x86-64-v4
+| Method                                                   | PoolSize | Mean      | Error    | StdDev    | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
+|--------------------------------------------------------- |--------- |----------:|---------:|----------:|------:|--------:|-------:|----------:|------------:|
+| 'Shipped: LINQ pipeline, interface-typed sets'           | 200      |  19.24 us | 0.383 us |  0.641 us |  1.00 |    0.05 | 0.3052 |   5.47 KB |        1.00 |
+| 'Experiment: bounded top-N insertion buffer'             | 200      |  19.44 us | 0.385 us |  0.576 us |  1.01 |    0.04 | 0.4883 |   8.09 KB |        1.48 |
+| 'Experiment: LINQ pipeline + Score on concrete HashSets' | 200      |  15.46 us | 0.303 us |  0.404 us |  0.80 |    0.03 | 0.3204 |   5.47 KB |        1.00 |
+|                                                          |          |           |          |           |       |         |        |           |             |
+| 'Shipped: LINQ pipeline, interface-typed sets'           | 2000     | 274.64 us | 5.442 us |  9.093 us |  1.00 |    0.05 | 2.9297 |  51.09 KB |        1.00 |
+| 'Experiment: bounded top-N insertion buffer'             | 2000     | 288.93 us | 5.755 us | 14.331 us |  1.05 |    0.06 | 4.3945 |   78.4 KB |        1.53 |
+| 'Experiment: LINQ pipeline + Score on concrete HashSets' | 2000     | 271.17 us | 5.389 us |  9.718 us |  0.99 |    0.05 | 2.9297 |  51.09 KB |        1.00 |

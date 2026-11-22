@@ -1,0 +1,4 @@
+﻿##### PAGE WEIGHT: average response body over 7 pages, 140 requests each (all status 200) #####
+identity (no compression)  avg body 21.2 KB   statuses 200x140   requests 140 concurrency 4 encoding identity wall 0.2s rps 827
+gzip                       avg body 4.5 KB   statuses 200x140   requests 140 concurrency 4 encoding gzip wall 0.1s rps 934
+br                         avg body 3.4 KB   statuses 200x140   requests 140 concurrency 4 encoding br wall 0.1s rps 1124

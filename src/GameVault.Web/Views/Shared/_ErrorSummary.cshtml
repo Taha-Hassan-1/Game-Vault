@@ -1,0 +1,13 @@
+@* Every form error in one box. Written by hand because asp-validation-summary="All" always emits a hidden
+   <li style="display:none">, an inline style that the Content Security Policy forbids. *@
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger" role="alert">
+        <ul class="mb-0">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@(string.IsNullOrWhiteSpace(error.ErrorMessage) ? "That value is not valid." : error.ErrorMessage)</li>
+            }
+        </ul>
+    </div>
+}

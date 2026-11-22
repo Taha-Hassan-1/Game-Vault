@@ -89,22 +89,33 @@ public sealed class EfGameRepository : IGameRepository
         => (await Candidates(_db.Games.AsNoTracking().Where(g => g.Slug == slug).OrderBy(g => g.Id), 1, ct)).FirstOrDefault();
 
     public Task<IReadOnlyList<SimilarityCandidate>> GetCandidatePoolAsync(string excludeSlug, int poolSize, CancellationToken ct = default)
+        // Same key order as IX_Games_Rating_Title (Id is the clustered key, so it is implicitly the last column of every index),
+        // which lets SQL Server read the top candidates in order instead of sorting every game.
         => Candidates(_db.Games.AsNoTracking().Where(g => g.Slug != excludeSlug)
-            .OrderByDescending(g => g.RatingAverage).ThenBy(g => g.Id), poolSize, ct);
+            .OrderByDescending(g => g.RatingAverage).ThenByDescending(g => g.RatingCount).ThenBy(g => g.Title).ThenBy(g => g.Id), poolSize, ct);
 
     private static IQueryable<GameCard> Cards(IQueryable<Game> q) => q.Select(g => new GameCard(
         g.Id, g.Slug, g.Title, g.CoverUrl, g.ReleaseDate, g.RatingAverage, g.RatingCount, g.IsStudioGame,
         g.Genres.OrderBy(x => x.Name).Select(x => x.Name).ToList()));
 
-    private static async Task<IReadOnlyList<SimilarityCandidate>> Candidates(IQueryable<Game> q, int take, CancellationToken ct)
+    /// <summary>
+    /// Three plain queries (the games, then their genre slugs, then their tag slugs) joined in memory. Measured on 5,000 games
+    /// this beat both a single joined query (which repeats every game once per genre-tag pair) and EF's split query.
+    /// </summary>
+    private async Task<IReadOnlyList<SimilarityCandidate>> Candidates(IQueryable<Game> q, int take, CancellationToken ct)
     {
-        var rows = await q.Take(take).AsSplitQuery().Select(g => new
-        {
-            Card = new GameCard(g.Id, g.Slug, g.Title, g.CoverUrl, g.ReleaseDate, g.RatingAverage, g.RatingCount,
-                g.IsStudioGame, g.Genres.OrderBy(x => x.Name).Select(x => x.Name).ToList()),
-            GenreSlugs = g.Genres.Select(x => x.Slug).ToList(),
-            TagSlugs = g.Tags.Select(x => x.Slug).ToList()
-        }).ToListAsync(ct);
-        return rows.Select(r => new SimilarityCandidate(r.Card, r.GenreSlugs.ToHashSet(), r.TagSlugs.ToHashSet())).ToList();
+        var cards = await Cards(q.Take(take)).ToListAsync(ct);
+        if (cards.Count == 0) return Array.Empty<SimilarityCandidate>();
+
+        var ids = cards.Select(c => c.Id).ToList();
+        var genreRows = await _db.Games.AsNoTracking().Where(g => ids.Contains(g.Id))
+            .SelectMany(g => g.Genres.Select(x => new { g.Id, x.Slug })).ToListAsync(ct);
+        var tagRows = await _db.Games.AsNoTracking().Where(g => ids.Contains(g.Id))
+            .SelectMany(g => g.Tags.Select(x => new { g.Id, x.Slug })).ToListAsync(ct);
+
+        var genres = genreRows.GroupBy(r => r.Id).ToDictionary(g => g.Key, g => g.Select(r => r.Slug).ToHashSet());
+        var tags = tagRows.GroupBy(r => r.Id).ToDictionary(g => g.Key, g => g.Select(r => r.Slug).ToHashSet());
+        var none = new HashSet<string>();
+        return cards.Select(c => new SimilarityCandidate(c, genres.GetValueOrDefault(c.Id) ?? none, tags.GetValueOrDefault(c.Id) ?? none)).ToList();
     }
 }

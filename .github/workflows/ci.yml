@@ -14,6 +14,12 @@ jobs:
           ACCEPT_EULA: "Y"
           MSSQL_SA_PASSWORD: "Your_strong_Passw0rd"
         ports: ["1433:1433"]
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P Your_strong_Passw0rd -Q 'SELECT 1'"
+          --health-interval 10s --health-timeout 5s --health-retries 12
+    env:
+      # The integration tests create and drop a throwaway database per test class on this server.
+      GAMEVAULT_TEST_CONNECTION: "Server=localhost,1433;User Id=sa;Password=Your_strong_Passw0rd;TrustServerCertificate=True"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -21,8 +27,16 @@ jobs:
           dotnet-version: 10.0.x
       - run: dotnet restore
       - run: dotnet build --no-restore -c Release -warnaserror
-      # The integration tests use Windows authentication by default; CI needs a SQL login variant (see README, "Tests").
-      - run: dotnet test --no-build -c Release --filter "FullyQualifiedName~Unit"
+      # Unit and integration tests, with coverage collected for the Application project only.
+      # (The browser smoke tests live in tests/GameVault.Smoke, outside this solution, so they are not part of this run.)
+      - run: dotnet test --no-build -c Release --settings coverage.runsettings --collect:"XPlat Code Coverage" --results-directory TestResults
+      # Fails the build below 70% line coverage of the Application project.
+      - run: pwsh scripts/check-coverage.ps1 -ResultsDirectory TestResults -Minimum 70
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: TestResults/**/coverage.cobertura.xml
 
   docker:
     needs: build-test

@@ -30,6 +30,10 @@ public sealed class GameCatalog : IGameCatalog
         var source = await _games.GetCandidateAsync(slug, ct);
         if (source is null) return Array.Empty<GameCard>();
         var pool = await _games.GetCandidatePoolAsync(slug, SimilarPoolSize, ct);
+
+        // Ranking 200 candidates takes about 20 microseconds (benchmarks/GameVault.Benchmarks, docs/PERFORMANCE.md). A bounded
+        // top-N selection and a tuned set comparison were both measured and not worth their complexity: loading the candidates
+        // from SQL is hundreds of times more expensive than ranking them.
         return pool
             .Select(c => (c.Card, Score: _similarity.Score(source, c)))
             .Where(x => x.Score > 0)

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Coverage is measured for the Application project only: that is the layer the spec sets the 70% target for. -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Include>[GameVault.Application]*</Include>
+          <!-- Do NOT exclude CompilerGeneratedAttribute: the compiler turns every async method into a generated state machine,
+               so excluding it silently drops all async code from the report and inflates the number. -->
+          <ExcludeByAttribute>GeneratedCodeAttribute</ExcludeByAttribute>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

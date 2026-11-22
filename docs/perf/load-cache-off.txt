@@ -1,0 +1,13 @@
+﻿##### CACHE OFF (Catalogue__CacheEnabled=false), brotli, 16 concurrent clients, 4000 requests over 7 pages, 5,000-game catalogue #####
+first (cold) request per page, ms:
+    349.6  200     2409 B  /
+    132.0  200     3967 B  /games
+     32.8  200     3909 B  /games?sort=TopRated
+     44.5  200     3978 B  /games?genre=genre-03
+     60.1  200     3986 B  /games?search=dragon
+    280.7  200     3001 B  /games/synthetic-game-0100
+     39.5  200     2916 B  /games/synthetic-game-2500
+/, /games, /games?sort=TopRated, /games?genre=genre-03, /games?search=dragon, /games/synthetic-game-0100, /games/synthetic-game-2500
+requests 4000  concurrency 16  encoding br  wall 13.1s  rps 305
+latency ms  p50 36.8  p90 109.1  p95 123.7  p99 170.3  max 266.9
+avg body 3.4 KB   statuses 200x4000

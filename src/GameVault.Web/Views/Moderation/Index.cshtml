@@ -24,7 +24,7 @@
                     @if (r.Reports.Count > 0) { <span class="badge text-bg-danger">@r.Reports.Count report@(r.Reports.Count == 1 ? "" : "s")</span> }
                 </div>
             </div>
-            @if (!string.IsNullOrWhiteSpace(r.Body)) { <p class="mt-3 mb-2" style="white-space:pre-wrap">@r.Body</p> }
+            @if (!string.IsNullOrWhiteSpace(r.Body)) { <p class="mt-3 mb-2 gv-prewrap">@r.Body</p> }
             @if (r.Reports.Count > 0)
             {
                 <ul class="small text-body-secondary mb-3">

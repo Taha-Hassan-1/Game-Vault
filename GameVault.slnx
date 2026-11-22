@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/GameVault.Benchmarks/GameVault.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/GameVault.Application/GameVault.Application.csproj" />
     <Project Path="src/GameVault.Domain/GameVault.Domain.csproj" />

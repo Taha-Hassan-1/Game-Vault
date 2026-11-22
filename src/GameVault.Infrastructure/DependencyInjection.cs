@@ -55,7 +55,13 @@ public static class DependencyInjection
 
         services.AddHybridCache();
         services.AddScoped<GameCatalog>();
-        services.AddScoped<IGameCatalog>(sp => new CachedGameCatalog(sp.GetRequiredService<GameCatalog>(), sp.GetRequiredService<HybridCache>()));
+
+        // The decorator is the only thing that adds caching, so this one registration is the whole switch. It exists so the
+        // difference can be measured (docs/PERFORMANCE.md); leave it on in production.
+        if (config.GetValue("Catalogue:CacheEnabled", true))
+            services.AddScoped<IGameCatalog>(sp => new CachedGameCatalog(sp.GetRequiredService<GameCatalog>(), sp.GetRequiredService<HybridCache>()));
+        else
+            services.AddScoped<IGameCatalog>(sp => sp.GetRequiredService<GameCatalog>());
         return services;
     }
 }

@@ -14,18 +14,26 @@ namespace GameVault.Tests.Integration;
 public class GameVaultFactory : WebApplicationFactory<Program>
 {
     private static readonly string SqlServer = Environment.GetEnvironmentVariable("GAMEVAULT_TEST_SERVER") ?? @".\SQLEXPRESS";
+
+    // GAMEVAULT_TEST_CONNECTION is a full connection string without a Database part, for servers that need a SQL login
+    // (CI uses it). Without it the local server is used with Windows authentication.
+    private static readonly string ServerConnection =
+        (Environment.GetEnvironmentVariable("GAMEVAULT_TEST_CONNECTION") ?? $"Server={SqlServer};Trusted_Connection=True;TrustServerCertificate=True").TrimEnd(';');
+
     private readonly string _db = "GameVault_Test_" + Guid.NewGuid().ToString("N");
 
-    private string ConnectionString => $"Server={SqlServer};Database={_db};Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+    private string ConnectionString => $"{ServerConnection};Database={_db};MultipleActiveResultSets=true";
 
     protected virtual IReadOnlyDictionary<string, string?> ExtraSettings { get; } = new Dictionary<string, string?>();
+
+    protected virtual string EnvironmentName => "Development";
 
     /// <summary>Each factory writes uploads to its own temp folder, never to the real App_Data.</summary>
     public string UploadsPath { get; } = Path.Combine(Path.GetTempPath(), "gv_uploads_" + Guid.NewGuid().ToString("N"));
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Development");
+        builder.UseEnvironment(EnvironmentName);
         // UseSetting, not ConfigureAppConfiguration: Program.cs reads the connection string while building,
         // before late configuration sources are applied, so the latter silently hit the real dev database.
         builder.UseSetting("ConnectionStrings:GameVault", ConnectionString);
@@ -38,7 +46,7 @@ public class GameVaultFactory : WebApplicationFactory<Program>
         base.Dispose(disposing);
         if (!disposing) return;
         if (Directory.Exists(UploadsPath)) Directory.Delete(UploadsPath, recursive: true);
-        using var cn = new SqlConnection($"Server={SqlServer};Database=master;Trusted_Connection=True;TrustServerCertificate=True");
+        using var cn = new SqlConnection($"{ServerConnection};Database=master");
         cn.Open();
         using var cmd = cn.CreateCommand();
         cmd.CommandText = $"IF DB_ID('{_db}') IS NOT NULL BEGIN ALTER DATABASE [{_db}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{_db}]; END";

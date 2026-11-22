@@ -13,7 +13,7 @@
         }
 
         <form asp-controller="Reviews" asp-action="Save" asp-route-slug="@Model.Slug" method="post">
-            <div asp-validation-summary="All" class="alert alert-danger"></div>
+            <partial name="_ErrorSummary" />
             <div class="mb-3">
                 <label asp-for="Stars" class="form-label">Rating</label>
                 <select asp-for="Stars" class="form-select">

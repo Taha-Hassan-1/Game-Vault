@@ -52,11 +52,12 @@ public sealed class ApiKeyAuthenticationHandler : AuthenticationHandler<Authenti
 
 public static class ApiProblems
 {
+    /// <summary>A problem+json body with a traceId, so a report from a player or a Unity build can be matched to a log line.</summary>
     public static Task WriteAsync(HttpContext ctx, int status, string title, string? detail)
     {
         ctx.Response.StatusCode = status;
-        return ctx.Response.WriteAsJsonAsync(
-            new ProblemDetails { Status = status, Title = title, Detail = detail },
-            options: null, contentType: "application/problem+json", cancellationToken: ctx.RequestAborted);
+        var problem = new ProblemDetails { Status = status, Title = title, Detail = detail };
+        problem.Extensions["traceId"] = System.Diagnostics.Activity.Current?.Id ?? ctx.TraceIdentifier;
+        return ctx.Response.WriteAsJsonAsync(problem, options: null, contentType: "application/problem+json", cancellationToken: ctx.RequestAborted);
     }
 }

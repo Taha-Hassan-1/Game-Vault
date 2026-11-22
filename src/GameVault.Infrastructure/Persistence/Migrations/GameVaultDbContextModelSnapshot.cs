@@ -235,11 +235,21 @@ namespace GameVault.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Title");
 
-                    b.HasIndex("RatingAverage", "RatingCount");
+                    b.HasIndex("CreatedAt", "Title")
+                        .IsDescending(true, false)
+                        .HasDatabaseName("IX_Games_CreatedAt_Title");
+
+                    b.HasIndex("ReleaseDate", "Title")
+                        .IsDescending(true, false)
+                        .HasDatabaseName("IX_Games_ReleaseDate_Title");
 
                     b.HasIndex("Source", "ExternalId")
                         .IsUnique()
                         .HasFilter("[ExternalId] IS NOT NULL");
+
+                    b.HasIndex("RatingAverage", "RatingCount", "Title")
+                        .IsDescending(true, true, false)
+                        .HasDatabaseName("IX_Games_Rating_Title");
 
                     b.ToTable("Games");
                 });

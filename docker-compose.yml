@@ -1,3 +1,10 @@
+# Local trial: SQL Server plus the app, one command.
+#
+#   $env:GAMEVAULT_ADMIN_EMAIL = "you@example.com"
+#   $env:GAMEVAULT_ADMIN_PASSWORD = "<at least 10 characters, upper, lower, digit>"
+#   docker compose up --build
+#
+# Then open http://localhost:8080 and sign in with that account. The SQL password below is for this throwaway local container only.
 services:
   sql:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -18,4 +25,13 @@ services:
     environment:
       ConnectionStrings__GameVault: "Server=sql;Database=GameVault;User Id=sa;Password=Your_strong_Passw0rd;TrustServerCertificate=True"
       Database__MigrateOnStart: "true"
+      # Plain http on localhost cannot keep a Secure cookie, so allow it for this local trial only. Never in production.
+      Security__SecureCookies: "false"
+      Admin__Email: "${GAMEVAULT_ADMIN_EMAIL:?set GAMEVAULT_ADMIN_EMAIL}"
+      Admin__Password: "${GAMEVAULT_ADMIN_PASSWORD:?set GAMEVAULT_ADMIN_PASSWORD}"
+    volumes:
+      - uploads:/data
     ports: ["8080:8080"]
+
+volumes:
+  uploads:

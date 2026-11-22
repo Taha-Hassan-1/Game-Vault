@@ -8,7 +8,7 @@
         <h1 class="h3 mb-1">Send feedback</h1>
         <p class="text-body-secondary mb-4"><a asp-route="game" asp-route-slug="@Model.Slug">@Model.GameTitle</a> · goes straight to the studio</p>
         <form asp-controller="Feedback" asp-action="Send" asp-route-slug="@Model.Slug" method="post">
-            <div asp-validation-summary="All" class="alert alert-danger"></div>
+            <partial name="_ErrorSummary" />
             <div class="mb-3">
                 <label asp-for="Category" class="form-label"></label>
                 <select asp-for="Category" class="form-select">

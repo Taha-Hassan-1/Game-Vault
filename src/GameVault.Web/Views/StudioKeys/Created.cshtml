@@ -5,7 +5,7 @@
 <h1 class="h3 mb-3">New API key for @Model.GameTitle</h1>
 <div class="alert alert-warning">Copy this key now. It is not stored and cannot be shown again; if you lose it, revoke it and create a new one.</div>
 <div class="input-group mb-4">
-    <input class="form-control font-monospace" readonly value="@Model.Key.Plaintext" aria-label="API key" onfocus="this.select()" />
+    <input class="form-control font-monospace" readonly value="@Model.Key.Plaintext" aria-label="API key" data-select-on-focus />
 </div>
 <p class="text-body-secondary">Send it with each request:</p>
 <pre class="p-3 border rounded-2"><code>POST /api/v1/feedback
