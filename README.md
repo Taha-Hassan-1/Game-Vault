@@ -68,7 +68,7 @@ Eighteen short records in [docs/adr/](docs/adr/README.md): the thirteen from the
 | Milestone | State |
 |---|---|
 | M0 Setup, M1 Domain and data, M2 Catalogue | Done |
-| M3 RAWG integration | Done, tested with a fake HTTP handler; **not yet run against the live RAWG API** |
+| M3 RAWG integration | Done, tested with a fake HTTP handler, and run against the live RAWG API (first import: 103 games from 3 requests; smaller cover images confirmed). **Bulk import waits on RAWG's answer about caching** |
 | M4 Accounts and reviews | Done |
 | M5 Studio feedback hub | Done; **a real Unity build has not sent a message yet** |
 | M6 Harden and ship | Hardening, performance pass, docs and smoke tests done; **not deployed** |
@@ -80,8 +80,8 @@ Stated plainly so nothing here is a surprise:
 - **No live URL.** Nothing has been deployed, so the spec's "p95 under 300 ms on the deployed instance" is unmeasured. The k6 script is ready ([perf/catalogue.k6.js](perf/catalogue.k6.js)); locally the same pages answer in 19 ms at p95.
 - **CI has not run on GitHub yet**, and the Docker image has not been built (Docker is not installed on the development machine).
 - **Search uses `LIKE`, not full-text search.** The Full-Text feature is not installed on the development SQL Server Express; [docs/sql/fulltext.sql](docs/sql/fulltext.sql) is the untested setup for a server that has it ([ADR 16](docs/adr/0016-search-like-not-fulltext.md)).
-- **RAWG has never been called for real** (no API key yet), including the smaller-image URLs, which fall back to the originals if wrong. RAWG's terms do not mention caching: confirm with them before the first bulk import.
-- **The 1,000-game success criterion is untested:** the catalogue holds 31 seeded games until RAWG import is switched on; performance was measured on 5,000 synthetic ones.
+- **RAWG's terms do not mention caching, and RAWG has not been asked.** The live API works (a first import of 103 games; the smaller cover URLs return 200 at about a fifth of the size). Because this is a portfolio project, the nightly import is switched off (`SyncBudget:SyncEnabled=false`), so no new games are added; the 103 stored games stay, and a game page still fetches its own details once when first opened. Anyone running this as a real service should get RAWG's answer first.
+- **The 1,000-game success criterion is not met yet:** the catalogue holds 103 games locally (31 seeded plus the first RAWG pages); performance was measured on 5,000 synthetic ones.
 
 ## Documentation
 

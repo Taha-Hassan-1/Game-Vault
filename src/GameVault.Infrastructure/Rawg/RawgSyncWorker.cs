@@ -30,6 +30,12 @@ public sealed class RawgSyncWorker : BackgroundService
             return;
         }
 
+        if (!_sync.SyncEnabled)
+        {
+            _log.LogInformation("RAWG nightly sync is off (SyncBudget:SyncEnabled is false); details are still fetched when a game page is opened");
+            return;
+        }
+
         try
         {
             await Task.Delay(TimeSpan.FromMinutes(_sync.InitialDelayMinutes), stoppingToken);

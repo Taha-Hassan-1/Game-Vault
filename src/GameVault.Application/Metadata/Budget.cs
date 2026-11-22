@@ -29,6 +29,9 @@ public sealed class SyncBudgetOptions
     public int PagesPerRun { get; set; } = 5;
     public int RefreshPerRun { get; set; } = 50;
     public int InitialDelayMinutes { get; set; } = 1;
+
+    /// <summary>Turns off only the nightly import and refresh. Lazy detail fetches on page open still work (they need Rawg:Enabled).</summary>
+    public bool SyncEnabled { get; set; } = true;
 }
 
 public sealed class BudgetExceededException : Exception

@@ -39,6 +39,15 @@ public class GameVaultFactory : WebApplicationFactory<Program>
         builder.UseSetting("ConnectionStrings:GameVault", ConnectionString);
         builder.UseSetting("Uploads:Path", UploadsPath);
         foreach (var (key, value) in ExtraSettings) builder.UseSetting(key, value);
+        // The Development host also reads the developer's user-secrets, which may switch RAWG on with a real key.
+        // Tests must never depend on that or call the live API, so this source goes last and wins.
+        // (Safe here although the connection string needed UseSetting: these are read through IOptions, which binds late.)
+        builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Rawg:Enabled"] = "false",
+            ["Rawg:ApiKey"] = "",
+            ["SyncBudget:SyncEnabled"] = "false",
+        }));
     }
 
     protected override void Dispose(bool disposing)

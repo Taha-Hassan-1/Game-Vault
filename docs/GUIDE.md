@@ -22,6 +22,7 @@ Settings come from `appsettings*.json`, user-secrets in development and environm
 | `Admin:Email`, `Admin:Password` | unset | Creates the first Admin at start. |
 | `Rawg:Enabled`, `Rawg:ApiKey` | `false`, empty | Turns on the RAWG import. Startup fails fast if enabled without a key. |
 | `SyncBudget:MonthlyLimit`, `SyncBudget:SyncLimit` | 20,000 and 15,000 | RAWG request budget per month; the sync stops at the second. |
+| `SyncBudget:SyncEnabled` | `true` | `false` turns off only the nightly import and refresh. Game details are still fetched from RAWG when a page is opened (needs `Rawg:Enabled`). |
 | `Database:MigrateOnStart` | `false` | Apply migrations and seed at start outside Development (first run only). |
 | `Security:SecureCookies` | `true` outside Development | Secure flag on the sign-in and anti-forgery cookies. |
 | `FeedbackApi:PermitPerMinute`, `FeedbackApi:IpPermitPerMinute` | 30 and 120 | Rate limits for the Unity endpoint. |
@@ -119,9 +120,9 @@ How it behaves:
 - **Nightly sync:** a background service refreshes the stalest rows first, then imports the next pages of popular games (cursor saved in `SyncState`). The first run starts one minute after boot.
 - **Budget:** every outbound attempt, retries included, is counted in `ApiUsage`. The sync stops at 15,000 requests a month; on-demand calls stop at 20,000.
 - **Outages:** retries (3, exponential with jitter, honours `Retry-After`), 10 s per attempt, 30 s total, circuit breaker. A failure is logged and the page renders from the stored copy.
-- **Images:** cards ask RAWG's CDN for a 420 px version of each cover, with a fallback to the original. Not verified against the live service (see PERFORMANCE.md).
+- **Images:** cards ask RAWG's CDN for a 420 px version of each cover, with a fallback to the original. Checked against the live service: the resized URL returns 200 at about a fifth of the original's size (21 KB against 95 KB for one cover).
 - **Attribution:** the footer and every RAWG game page link to rawg.io, as RAWG's terms require.
-- **Open item:** RAWG's terms don't mention caching. Email them to confirm before the first bulk import; if the answer is no, switch to fetch-through caching only. **Not yet run against the live RAWG API.**
+- **Open item:** RAWG's terms don't mention caching. Email them to confirm before the first bulk import; if the answer is no, switch to fetch-through caching only. RAWG has not been asked (this is a portfolio project) and the nightly sync is switched off after one live run (103 games imported): `Rawg:Enabled=true` with `SyncBudget:SyncEnabled=false`. Game pages still fetch their own description and screenshots once, on first open. Set `Rawg:Enabled=false` to stop all RAWG traffic; the stored games keep showing.
 
 ## Tests
 
